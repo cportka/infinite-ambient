@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Infinite Ambient — endless generative soundscapes</title>
+    <meta
+      name="description"
+      content="An infinite, endlessly customizable stream of generative ambient music. Runs entirely in your browser — no accounts, no uploads, no repeats."
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="viz" aria-hidden="true"></canvas>
+
+    <main class="panel" role="main">
+      <header class="masthead">
+        <h1>Infinite&nbsp;Ambient</h1>
+        <p class="tagline">An endless, ever-shifting soundscape. It never repeats.</p>
+      </header>
+
+      <button id="playBtn" class="play" aria-pressed="false" aria-label="Play or pause">
+        <span class="glyph" aria-hidden="true"></span>
+        <span class="label">Play</span>
+      </button>
+
+      <section class="presets-section" aria-label="Mood presets">
+        <h2 class="section-title">Mood</h2>
+        <div id="presets" class="presets"></div>
+      </section>
+
+      <section class="controls" aria-label="Sound controls">
+        <div class="control">
+          <label for="density">Density <span class="readout" data-readout="density"></span></label>
+          <input id="density" type="range" min="0" max="1" step="0.01" />
+        </div>
+        <div class="control">
+          <label for="brightness">Brightness <span class="readout" data-readout="brightness"></span></label>
+          <input id="brightness" type="range" min="0" max="1" step="0.01" />
+        </div>
+        <div class="control">
+          <label for="space">Space <span class="readout" data-readout="space"></span></label>
+          <input id="space" type="range" min="0" max="1" step="0.01" />
+        </div>
+        <div class="control">
+          <label for="pace">Pace <span class="readout" data-readout="pace"></span></label>
+          <input id="pace" type="range" min="0" max="1" step="0.01" />
+        </div>
+        <div class="control">
+          <label for="volume">Volume <span class="readout" data-readout="volume"></span></label>
+          <input id="volume" type="range" min="0" max="1" step="0.01" />
+        </div>
+
+        <div class="control control--select">
+          <label for="key">Key</label>
+          <select id="key"></select>
+        </div>
+        <div class="control control--select">
+          <label for="scale">Scale</label>
+          <select id="scale"></select>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <button id="randomBtn" class="ghost">↺ New atmosphere</button>
+        <span class="hint">Press <kbd>space</kbd> to play / pause</span>
+      </footer>
+    </main>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
