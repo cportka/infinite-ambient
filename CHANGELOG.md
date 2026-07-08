@@ -4,6 +4,41 @@ All notable changes to this project are documented here. The format follows Keep
 (https://keepachangelog.com) and the project uses Semantic Versioning (https://semver.org).
 Every change bumps the version and adds an entry below.
 
+## [0.3.0] - 2026-07-08
+
+### Added
+- **A rack of instruments.** The engine is now packaged as one instrument,
+  **Infinite Drone** (v1), among many. Instruments play simultaneously through a
+  shared audio system, each in its own **pane** with its own visual and controls;
+  panes open, close, and change.
+- **The Conductor** — a communication system so instruments listen to each other
+  across three channels: **timing** (one shared lookahead clock broadcasting
+  `pulse`/`harmony` events with sample-accurate `when` times), **pitch** (one
+  shared tonal field — the key seeds a piece and a drifting harmonic centre every
+  instrument reads and answers; instruments `announce` notes for call-and-response),
+  and **timbre** (a shared energy/brightness/density field so an instrument can
+  duck when the mix is loud or fill the gaps when it's sparse).
+- **New instrument: Filament** — Karplus-Strong plucked microtonal strings (role:
+  lead, amber). It ignores the fast pulse and locks to bars, answers the harmonic
+  centre a register up with consonant offsets, and reads the shared field to lay
+  back or fill gaps. Distinct constellation visual.
+- **Shared visual story.** A background compositor renders the whole ensemble
+  (master analyser + every instrument's note events, tinted by each instrument's
+  hue); each pane's local visual is driven by the same events, so panes feed the
+  broader field and the field frames the panes.
+- Global controls: shared **Key** (seeds the ensemble), transport, pace, master
+  volume, and an **add-instrument** menu generated from the registry.
+- Deterministic conductor test suite (`tests/conductor.test.mjs`).
+
+### Changed
+- The Key is now shared by the whole ensemble; each instrument retunes to it.
+- Reorganised `src/` into `audio/` (context, conductor, instrument base,
+  `instruments/`) and `ui/` (panes, global controls, `visuals/`).
+
+### Removed
+- `src/audio/engine.js`, `src/ui/visualizer.js`, `src/ui/controls.js` — folded
+  into the instrument/pane/conductor architecture.
+
 ## [0.2.0] - 2026-07-08
 
 ### Added
