@@ -1,6 +1,6 @@
 {
   "name": "infinite-ambient",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
   "description": "An infinite, endlessly customizable stream of generative ambient music — a static Web Audio app with no build step and no dependencies.",
   "type": "module",

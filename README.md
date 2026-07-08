@@ -1,6 +1,6 @@
 # infinite-ambient
 
-> **Version:** 0.3.1
+> **Version:** 0.4.0
 
 An infinite generative ambient **rack** — a set of instruments that play together and listen to
 each other — generated live in your browser.
@@ -36,7 +36,14 @@ feed the broader field and the field frames the panes.
   evolving pads, soft bass, an interval-leaping arpeggio, and bells. Signature visual: the aurora.
 - **Filament** *(lead, amber)* — Karplus-Strong plucked microtonal strings, timbrally the opposite
   of the drone. Locks to bars, answers the harmonic centre a register up, and reads the shared field
-  to lay back or fill the gaps. Visual: a threaded constellation.
+  to lay back or fill the gaps. A **Melt** control (filtered feedback delay) lets the plucks echo
+  and blur into the bed. Visual: ripples in a puddle.
+- **Electricity** *(texture, cyan)* — states of electricity: a mains **hum** tuned to the root,
+  ring-modulated **interference**, a **storm** of lightning cracks + thunder, and **sawtooth jitter**
+  magnetism. Visual: lightning bolts over an electric field.
+- **Explosions** *(rhythm, amber-red)* — synthesised explosions on a continuum: super-slow **ambient
+  booms** ↔ a fast **Rhythm-King-style drum machine**, with a melodic **arpeggiating explosive beat**
+  in between (and a reverse "swallow" that sucks in before the blast). Visual: expanding shockwaves.
 
 ## The key
 
@@ -114,10 +121,14 @@ src/
     piece.js                  seed → deterministic microtonal piece (unit-tested)
     reverb.js                 synthesised convolution impulse
     presets.js                curated named keys
+    noise.js                  shared seeded noise-buffer helper
     instruments/
       index.js                the instrument registry (drives the UI)
       infinite-drone.js       instrument v1 — the bed
       filament.js             Karplus-Strong plucked strings — the lead
+      electricity.js          hum / interference / storm / jitter — texture
+      explosions.js           ambient booms ↔ drum machine — rhythm
+  version.js                  app version shown in the header
   ui/
     global-controls.js        shared key / transport / pace / volume / add
     pane.js                   one instrument's pane (visual + generic controls)
@@ -125,7 +136,9 @@ src/
     visuals/
       background.js           whole-ensemble compositor
       drone-visual.js         the aurora
-      filament-visual.js      the constellation
+      filament-visual.js      the puddle ripples
+      electricity-visual.js   lightning bolts
+      explosions-visual.js    shockwaves
 tests/                        node --test suite + version sync
 ```
 
