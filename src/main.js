@@ -23,9 +23,11 @@ const paneManager = new PaneManager({
 
 setupGlobalControls({ audio, conductor, paneManager });
 
-// Open with the two default instruments — the ensemble the user first hears.
+// Open with the full ensemble — all instruments shown from the start.
 paneManager.addInstrument("infinite-drone");
 paneManager.addInstrument("filament");
+paneManager.addInstrument("electricity");
+paneManager.addInstrument("explosions");
 
 // Visuals animate continuously (they idle gently when paused); audio waits for
 // the first gesture via the transport.

@@ -4,6 +4,26 @@ All notable changes to this project are documented here. The format follows Keep
 (https://keepachangelog.com) and the project uses Semantic Versioning (https://semver.org).
 Every change bumps the version and adds an entry below.
 
+## [0.4.2] - 2026-07-08
+
+### Fixed
+- **Mix balance / audibility.** The three newer instruments were ~10× quieter than
+  the drone (near-inaudible in the mix). Rebalanced levels (drone down a touch;
+  Filament, Electricity, Explosions up substantially), softened the master limiter,
+  nudged master volume up, and sped up the drone's fade-in so the ensemble is
+  clearly audible the moment you press Play.
+- **AudioContext resume** now also fires on the first user gesture anywhere (not
+  just the Play button), as a safety for browsers that leave a page-load context
+  suspended.
+
+### Changed
+- **All four instruments now open on load** (was drone + Filament only).
+- **Distinct visuals again.** The shared "breathing field" base introduced in
+  0.4.1 made every pane look alike; removed it. Each visual now has its own
+  continuous motion: Filament back to puddle ripples, Electricity a breathing
+  plasma core with constant crackle + bolts, Explosions a smouldering core with
+  embers + shockwaves, drone keeps its aurora.
+
 ## [0.4.1] - 2026-07-08
 
 ### Fixed

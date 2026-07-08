@@ -1,6 +1,6 @@
 # infinite-ambient
 
-> **Version:** 0.4.1
+> **Version:** 0.4.2
 
 An infinite generative ambient **rack** — a set of instruments that play together and listen to
 each other — generated live in your browser.
@@ -50,26 +50,6 @@ feed the broader field and the field frames the panes.
 The **key** is just a string — `aurora`, `tidewater`, a random `vel-drin-42`, or anything you type.
 It deterministically seeds the ensemble, so the same key always plays the same music from the same
 start, a new key is a whole new ensemble, and copying your key hands someone exactly what you heard.
-
-## Not Western scales
-
-There are no note names, no C-major keys, no 12-tone grid. Pitch is built from frequency **ratios** —
-intervals matter more than notes:
-
-- an **equal division of a period** (often non-12: 5, 7, 13, 17… EDO) with a coprime generator
-  stacked into a moment-of-symmetry scale, **or** a **just-intonation** subset reaching into the
-  7- and 11-limit;
-- **continuous roots** that float off the A440 grid, and periods that can be **stretched octaves**
-  or the **3/1 tritave** (no octaves at all) — the source of the drone's microtonal shimmer.
-
-## The key
-
-The centrepiece is a single **key**. It's just a string — `aurora`, `tidewater`, a random
-`vel-drin-42`, or anything you type. It deterministically seeds the entire piece, so:
-
-- the same key always plays the same piece, from the same starting point;
-- a new key is a whole new piece;
-- copy your key and hand it to someone — they hear exactly what you heard.
 
 ## Not Western scales
 

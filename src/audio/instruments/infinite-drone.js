@@ -15,7 +15,7 @@ export const meta = {
   name: "Infinite Drone",
   role: "bed",
   hue: 265,
-  gain: 0.85,
+  gain: 0.78,
   blurb: "The pedal drone, pads, bass, and interval arpeggio — the harmonic bed.",
   params: [
     { key: "motion", label: "Motion", min: 0, max: 1, step: 0.01, default: 0.3 },
@@ -219,7 +219,7 @@ export class InfiniteDrone extends Instrument {
     const ctx = this.ctx;
     const gain = ctx.createGain();
     gain.gain.value = 0;
-    gain.gain.setTargetAtTime(0.12, ctx.currentTime, 2.5);
+    gain.gain.setTargetAtTime(0.14, ctx.currentTime, 1.0); // come in promptly & clearly
     const filter = ctx.createBiquadFilter();
     filter.type = "lowpass";
     filter.frequency.value = 700;

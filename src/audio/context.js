@@ -13,13 +13,13 @@ export function createAudioSystem() {
   const ctx = new Ctx();
 
   const master = ctx.createGain();
-  master.gain.value = 0.85;
+  master.gain.value = 0.9;
 
   // A gentle limiter keeps a stack of simultaneous instruments from clipping.
   const limiter = ctx.createDynamicsCompressor();
-  limiter.threshold.value = -8;
-  limiter.knee.value = 12;
-  limiter.ratio.value = 12;
+  limiter.threshold.value = -6;
+  limiter.knee.value = 10;
+  limiter.ratio.value = 8;
   limiter.attack.value = 0.005;
   limiter.release.value = 0.25;
 

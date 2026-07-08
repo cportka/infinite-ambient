@@ -23,7 +23,7 @@ export const meta = {
   name: "Electricity",
   role: "texture",
   hue: 190, // electric cyan
-  gain: 0.55,
+  gain: 1.1,
   blurb: "Thunder, hum, interference, and sawtooth magnetism.",
   params: [
     { key: "hum", label: "Hum", min: 0, max: 1, step: 0.01, default: 0.32 },
@@ -60,9 +60,9 @@ export class Electricity extends Instrument {
   onParam(name, value) {
     if (!this.layers) return;
     const t = this.ctx.currentTime;
-    if (name === "hum") this.layers.humGain.gain.setTargetAtTime(value * 0.11, t, 0.3);
-    else if (name === "interference") this.layers.interGain.gain.setTargetAtTime(value * 0.09, t, 0.3);
-    else if (name === "jitter") this.layers.jitGain.gain.setTargetAtTime(value * 0.06, t, 0.3);
+    if (name === "hum") this.layers.humGain.gain.setTargetAtTime(value * 0.5, t, 0.3);
+    else if (name === "interference") this.layers.interGain.gain.setTargetAtTime(value * 0.42, t, 0.3);
+    else if (name === "jitter") this.layers.jitGain.gain.setTargetAtTime(value * 0.28, t, 0.3);
   }
 
   _humFreq() {
@@ -78,7 +78,7 @@ export class Electricity extends Instrument {
     // A slow breath that swells the whole electric bed in and out, like the
     // drone's pedal — everything continuous passes through it.
     const breathGain = ctx.createGain();
-    breathGain.gain.value = 0.75;
+    breathGain.gain.value = 0.85;
     breathGain.connect(this.output);
     const breathLfo = ctx.createOscillator();
     breathLfo.frequency.value = 0.06;
@@ -91,7 +91,7 @@ export class Electricity extends Instrument {
     // HUM: sawtooth fundamental + two harmonics through a lowpass, with tremolo.
     const humGain = ctx.createGain();
     humGain.gain.value = 0;
-    humGain.gain.setTargetAtTime(this.params.hum * 0.11, t, 1.2);
+    humGain.gain.setTargetAtTime(this.params.hum * 0.5, t, 1.2);
     const humFilter = ctx.createBiquadFilter();
     humFilter.type = "lowpass";
     humFilter.frequency.value = 1400;
@@ -149,7 +149,7 @@ export class Electricity extends Instrument {
     modOsc.connect(modDepth);
     modDepth.connect(ring.gain);
     const interGain = ctx.createGain();
-    interGain.gain.value = this.params.interference * 0.09;
+    interGain.gain.value = this.params.interference * 0.42;
     noiseSrc.connect(bp);
     bp.connect(ring);
     ring.connect(interGain);
@@ -167,7 +167,7 @@ export class Electricity extends Instrument {
     jitBp.frequency.value = 800;
     jitBp.Q.value = 8;
     const jitGain = ctx.createGain();
-    jitGain.gain.value = this.params.jitter * 0.06;
+    jitGain.gain.value = this.params.jitter * 0.28;
     jitSaw.connect(jitBp);
     jitBp.connect(jitGain);
     jitGain.connect(breathGain);
@@ -233,7 +233,7 @@ export class Electricity extends Instrument {
     if (rng() < 0.25 * amt) {
       // brief magnetic dropout
       L.jitGain.gain.setValueAtTime(0, when);
-      L.jitGain.gain.setTargetAtTime(this.params.jitter * 0.06, when + 0.04, 0.05);
+      L.jitGain.gain.setTargetAtTime(this.params.jitter * 0.28, when + 0.04, 0.05);
     }
   }
 
@@ -247,7 +247,7 @@ export class Electricity extends Instrument {
     bp.Q.value = big ? 1.2 : 3;
     const g = ctx.createGain();
     const decay = (big ? 1.0 + rng() * 0.8 : 0.08 + rng() * 0.12) * scale;
-    const peak = (big ? 0.5 : 0.16) * scale;
+    const peak = (big ? 0.6 : 0.26) * scale;
     g.gain.setValueAtTime(0.0001, when);
     g.gain.exponentialRampToValueAtTime(peak, when + 0.004);
     g.gain.exponentialRampToValueAtTime(0.0008, when + decay);
@@ -294,7 +294,7 @@ export class Electricity extends Instrument {
     const g = ctx.createGain();
     const decay = 2.2 + rng() * 1.6;
     g.gain.setValueAtTime(0, when);
-    g.gain.linearRampToValueAtTime(0.4, when + 0.25);
+    g.gain.linearRampToValueAtTime(0.5, when + 0.25);
     g.gain.exponentialRampToValueAtTime(0.0008, when + decay);
     src.connect(lp);
     lp.connect(g);
