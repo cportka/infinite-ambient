@@ -138,11 +138,68 @@ h1 {
   font-weight: 600;
 }
 
-.presets {
+/* --- the key ------------------------------------------------------------ */
+
+.key-section {
+  margin-bottom: 1.6rem;
+}
+
+.key-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+.key-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--panel-brd);
+  background: rgba(8, 10, 24, 0.5);
+  color: var(--ink);
+  font-family: ui-monospace, "SF Mono", "Menlo", monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.key-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124, 156, 255, 0.18);
+}
+
+.key-btn {
+  flex: 0 0 auto;
+  padding: 0 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--panel-brd);
+  background: var(--control-bg);
+  color: var(--ink);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.key-btn:hover {
+  border-color: var(--accent);
+}
+
+.key-btn.flash {
+  background: linear-gradient(120deg, rgba(124, 156, 255, 0.6), rgba(181, 140, 255, 0.6));
+  border-color: transparent;
+}
+
+.key-hint {
+  margin: 0.5rem 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.keys {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1.6rem;
 }
 
 .chip {
