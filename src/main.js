@@ -1,16 +1,30 @@
-// main.js — wire the engine, visualizer, and controls together.
+// main.js — boot the rack: shared audio system, conductor, pane manager (with the
+// background compositor), global controls, and the two default instruments.
 
-import { AmbientEngine } from "./audio/engine.js";
-import { Visualizer } from "./ui/visualizer.js";
-import { setupControls } from "./ui/controls.js";
+import { createAudioSystem } from "./audio/context.js";
+import { Conductor } from "./audio/conductor.js";
+import { PaneManager } from "./ui/pane-manager.js";
+import { setupGlobalControls } from "./ui/global-controls.js";
 
-const engine = new AmbientEngine();
-const visualizer = new Visualizer(document.getElementById("viz"), engine);
-setupControls(engine);
+const audio = createAudioSystem();
+const conductor = new Conductor(audio);
 
-// The visual runs continuously (it idles gently when silent); the audio only
-// starts on a user gesture, handled inside the controls.
-visualizer.start();
+const paneManager = new PaneManager({
+  container: document.getElementById("panes"),
+  bgCanvas: document.getElementById("bg"),
+  audio,
+  conductor,
+});
 
-// Expose for quick console tinkering / debugging.
-window.__ambient = { engine, visualizer };
+setupGlobalControls({ audio, conductor, paneManager });
+
+// Open with the two default instruments — the ensemble the user first hears.
+paneManager.addInstrument("infinite-drone");
+paneManager.addInstrument("filament");
+
+// Visuals animate continuously (they idle gently when paused); audio waits for
+// the first gesture via the transport.
+paneManager.startLoop();
+
+// Expose for console tinkering / debugging.
+window.__ambient = { audio, conductor, paneManager };

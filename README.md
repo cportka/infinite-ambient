@@ -1,15 +1,59 @@
 # infinite-ambient
 
-> **Version:** 0.2.0
+> **Version:** 0.3.0
 
-An infinite stream of ambient music, endlessly customizable — generated live in your browser.
+An infinite generative ambient **rack** — a set of instruments that play together and listen to
+each other — generated live in your browser.
 
 **▶ Live: https://cportka.github.io/infinite-ambient/**
 
-No accounts, no uploads, no audio files, no repeats. A **key** (any string) unlocks a piece: hashed,
-it seeds the root, the intervals, and the whole evolution, so the same key recreates the same piece
-note-for-note. Share the key, share the piece. A small Web Audio engine layers a microtonal drone,
-evolving pads, a soft bass, an interval-leaping arpeggio, and sparse bells over a slow pulse.
+No accounts, no uploads, no audio files, no repeats. A **key** (any string) seeds the whole
+ensemble: hashed, it builds a shared microtonal piece — root, intervals, and a drifting harmonic
+centre — that every instrument reads. Share the key, share the ensemble.
+
+## The rack & the Conductor
+
+Each instrument lives in its own **pane** with its own visual and controls; panes open, close, and
+change, and instruments play at the same time. They never talk to each other directly — they talk
+to the **Conductor**, which coordinates them across three channels:
+
+- **Timing** — one shared lookahead clock broadcasts `pulse` and `harmony` events with
+  sample-accurate times, so everyone locks to the same grid (some follow every pulse, some ride
+  whole bars).
+- **Pitch** — one shared tonal field: the key builds the piece and a harmonic centre drifts through
+  it; instruments draw pitches from the shared gamut (so they're always consonant) and `announce`
+  the notes they play, so others can **answer** or make room.
+- **Timbre** — a shared energy/brightness/density field read from the master mix, so an instrument
+  can duck when the mix is loud, brighten when it's dark, or **fill the gaps** when it's sparse.
+
+A background compositor renders the whole ensemble (master analyser + every instrument's notes,
+tinted by each instrument's hue); each pane's local visual is driven by the same events — the panes
+feed the broader field and the field frames the panes.
+
+## The instruments
+
+- **Infinite Drone** *(bed, violet)* — the original engine: a microtonal beating pedal drone,
+  evolving pads, soft bass, an interval-leaping arpeggio, and bells. Signature visual: the aurora.
+- **Filament** *(lead, amber)* — Karplus-Strong plucked microtonal strings, timbrally the opposite
+  of the drone. Locks to bars, answers the harmonic centre a register up, and reads the shared field
+  to lay back or fill the gaps. Visual: a threaded constellation.
+
+## The key
+
+The **key** is just a string — `aurora`, `tidewater`, a random `vel-drin-42`, or anything you type.
+It deterministically seeds the ensemble, so the same key always plays the same music from the same
+start, a new key is a whole new ensemble, and copying your key hands someone exactly what you heard.
+
+## Not Western scales
+
+There are no note names, no C-major keys, no 12-tone grid. Pitch is built from frequency **ratios** —
+intervals matter more than notes:
+
+- an **equal division of a period** (often non-12: 5, 7, 13, 17… EDO) with a coprime generator
+  stacked into a moment-of-symmetry scale, **or** a **just-intonation** subset reaching into the
+  7- and 11-limit;
+- **continuous roots** that float off the A440 grid, and periods that can be **stretched octaves**
+  or the **3/1 tritave** (no octaves at all) — the source of the drone's microtonal shimmer.
 
 ## The key
 
@@ -33,13 +77,14 @@ intervals matter more than notes:
 
 ## Features
 
-- **Truly generative & deterministic** — every note is scheduled live from the key; nothing is
-  pre-recorded, it never repeats, yet it's perfectly reproducible.
-- **Five voices** — microtonal beating drone, pads, bass, an interval arpeggio, and bells.
+- **A rack, not a track** — multiple instruments play together, each in its own pane; add or close
+  them live from the instrument menu.
+- **Instruments that listen** — timing/pitch/timbre communication via the Conductor (call-and-response,
+  gap-filling, shared harmonic motion).
+- **Truly generative & deterministic** — every note is scheduled live from the shared key; nothing is
+  pre-recorded, it never repeats, yet the harmonic frame is perfectly reproducible.
 - **Named keys** — Aurora, Deep Field, Tidewater, Glass Rain, Monolith, Petrichor — plus type-your-own
   and a randomiser.
-- **Live controls** — Motion, Shimmer, Brightness, Space (reverb), Pace, Volume.
-- **Reactive visuals** — an aurora canvas that breathes with the audio.
 - **Zero dependencies, zero build** — plain ES modules + Web Audio. Static files, hostable
   anywhere. Works offline once loaded.
 
@@ -58,19 +103,30 @@ browser autoplay policy.
 ## Project layout
 
 ```
-index.html            entry point
-styles.css            interface styling
+index.html                    entry point
+styles.css                    interface styling
 src/
-  main.js             wires engine + visualizer + controls
+  main.js                     boots audio, conductor, panes, controls
   audio/
-    engine.js         lookahead scheduler + voice synthesis
-    piece.js          seed → deterministic microtonal piece (unit-tested)
-    reverb.js         synthesised convolution impulse
-    presets.js        curated named keys
+    context.js                shared AudioContext + master bus + reverb send
+    conductor.js              shared clock + tonal field + note/timbre bus
+    instrument.js             base Instrument (submix, params, lifecycle)
+    piece.js                  seed → deterministic microtonal piece (unit-tested)
+    reverb.js                 synthesised convolution impulse
+    presets.js                curated named keys
+    instruments/
+      index.js                the instrument registry (drives the UI)
+      infinite-drone.js       instrument v1 — the bed
+      filament.js             Karplus-Strong plucked strings — the lead
   ui/
-    controls.js       DOM <-> engine bindings
-    visualizer.js     canvas aurora driven by the analyser
-tests/                node --test suite + version sync
+    global-controls.js        shared key / transport / pace / volume / add
+    pane.js                   one instrument's pane (visual + generic controls)
+    pane-manager.js           panes + shared RAF + background compositor
+    visuals/
+      background.js           whole-ensemble compositor
+      drone-visual.js         the aurora
+      filament-visual.js      the constellation
+tests/                        node --test suite + version sync
 ```
 
 ## Development
