@@ -51,16 +51,13 @@ export class Filament extends Instrument {
     this.hp.type = "highpass";
     this.hp.frequency.value = 160;
     this.hp.connect(this.output);
-    this.send.gain.value = this.params.space;
 
     this.listen("harmony", (h) => this._onBar(h));
+    // Remember the most recent melodic note another instrument announced (one that
+    // carries a gamut index), so we can answer it — real call-and-response.
     this.listen("note", (n) => {
-      if (n.instrument !== this.id) this.lastAnnounced = n;
+      if (n.instrument !== this.id && n.index != null) this.lastAnnounced = n;
     });
-  }
-
-  onParam(name, value) {
-    if (name === "space") this.send.gain.setTargetAtTime(value, this.ctx.currentTime, 0.1);
   }
 
   _onBar(h) {
@@ -82,8 +79,13 @@ export class Filament extends Instrument {
 
     // PITCH: answer the centre a register up, with a consonant offset. Optionally
     // lean toward a recently-announced note (an echo of the drone).
-    const register = period; // one period above the harmonic centre
-    let idx = this.center + register + [-2, -1, 0, 1, 2, 3][Math.floor(rng() * 6)];
+    // Answer: half the time echo the drone's last melodic note a register up,
+    // otherwise sit a register above the shared harmonic centre.
+    const register = period;
+    const anchor = this.lastAnnounced && rng() < 0.5
+      ? this.lastAnnounced.index + register
+      : this.center + register;
+    let idx = anchor + [-2, -1, 0, 1, 2, 3][Math.floor(rng() * 6)];
 
     // TIMBRE: brighter plucks when the field is dark, and vice-versa; plus tone knob.
     const brightness = clamp(this.params.tone * 0.6 + (1 - field.brightness) * 0.4, 0, 1);

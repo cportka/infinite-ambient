@@ -10,7 +10,7 @@ const FMAX = Math.log2(2400);
 export function createFilamentVisual(canvas, instrument, conductor) {
   const ctx = canvas.getContext("2d");
   const hue = instrument.meta.hue;
-  let w = 0, h = 0, last = 0;
+  let w = 0, h = 0;
   const stars = [];
   let prev = null;
 
@@ -82,7 +82,6 @@ export function createFilamentVisual(canvas, instrument, conductor) {
       ctx.arc(x, y, Math.max(0.6, r * 0.5), 0, Math.PI * 2);
       ctx.fill();
     }
-    last = step;
   }
 
   resize();

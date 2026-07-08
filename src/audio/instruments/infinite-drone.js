@@ -6,7 +6,7 @@
 // aurora.
 
 import { Instrument } from "../instrument.js";
-import { freqAt, gamutFreqs, stepRng, lerp } from "../piece.js";
+import { freqAt, gamutFreqs, stepRng, mulberry32, lerp } from "../piece.js";
 
 const SALT = 0xd51e; // keeps this instrument's per-step RNG distinct from others
 
@@ -44,8 +44,6 @@ export class InfiniteDrone extends Instrument {
     this.bellBus = ctx.createGain();
     this.bellBus.connect(this.output);
 
-    this.send.gain.value = this.params.space;
-
     this.listen("harmony", (h) => this._onHarmony(h));
     this.listen("pulse", (p) => this._onPulse(p));
     this.listen("key", () => this._retuneDrone());
@@ -63,8 +61,12 @@ export class InfiniteDrone extends Instrument {
     if (name === "brightness") {
       this.toneFilter.frequency.setTargetAtTime(brightnessToHz(value), this.ctx.currentTime, 0.1);
     } else if (name === "shimmer") {
-      if (this.drone) this._buildDroneVoices();
+      this._updateShimmer();
     }
+  }
+
+  get tailMs() {
+    return 3300; // pedal fade (0.6s) + oscillator stop (+3s) must ring out before disconnect
   }
 
   _report() {
@@ -86,21 +88,24 @@ export class InfiniteDrone extends Instrument {
   _onPulse(p) {
     if (!this._active) return;
     const rng = stepRng(this.conductor.piece.seedInt ^ SALT, p.index);
+    // A separate, seeded texture RNG for timbre jitter (decay/peak/pan) so those
+    // don't perturb the pitch/timing choices — and so a key recreates it exactly.
+    const trng = mulberry32((this.conductor.piece.seedInt ^ SALT ^ 0x7ea5 ^ Math.imul(p.index + 1, 2654435761)) >>> 0);
     const notes = Math.round(lerp(0, 7, this.params.motion));
     for (let i = 0; i < notes; i++) {
       const leap = [-3, -2, -1, 1, 1, 2, 3, 4][Math.floor(rng() * 8)];
       const idx = this.center + 2 + i * leap;
       const when = p.when + (i / Math.max(1, notes)) * p.stepDur + rng() * 0.04;
       const f = this.conductor.freq(idx);
-      this._playArp(f, when);
-      if (i === 0) this.announce(f, when, 0.4, "pluck");
+      this._playArp(f, when, trng);
+      if (i === 0) this.announce(f, when, 0.4, "pluck", idx);
     }
     const bellP = 0.1 + this.params.motion * 0.3;
     if (rng() < bellP) {
       const pool = gamutFreqs(this.conductor.piece, 1, 3);
       const f = pool[Math.floor(rng() * pool.length)];
       const when = p.when + rng() * p.stepDur;
-      this._playBell(f, when);
+      this._playBell(f, when, trng);
       this.announce(f, when, 0.5, "bell");
     }
   }
@@ -155,9 +160,9 @@ export class InfiniteDrone extends Instrument {
     this._cleanup(g, stopAt);
   }
 
-  _playArp(freq, time) {
+  _playArp(freq, time, rand = Math.random) {
     const ctx = this.ctx;
-    const decay = 0.4 + Math.random() * 0.6;
+    const decay = 0.4 + rand() * 0.6;
     const osc = ctx.createOscillator();
     osc.type = "triangle";
     osc.frequency.value = freq;
@@ -173,9 +178,9 @@ export class InfiniteDrone extends Instrument {
     this._cleanup(g, stopAt);
   }
 
-  _playBell(freq, time) {
+  _playBell(freq, time, rand = Math.random) {
     const ctx = this.ctx;
-    const decay = 2 + Math.random() * 3;
+    const decay = 2 + rand() * 3;
     const osc = ctx.createOscillator();
     osc.type = "sine";
     osc.frequency.value = freq;
@@ -185,7 +190,7 @@ export class InfiniteDrone extends Instrument {
     const otGain = ctx.createGain();
     otGain.gain.value = 0.18;
     const g = ctx.createGain();
-    const peak = 0.09 + Math.random() * 0.05;
+    const peak = 0.09 + rand() * 0.05;
     g.gain.setValueAtTime(0, time);
     g.gain.linearRampToValueAtTime(peak, time + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0008, time + decay);
@@ -194,7 +199,7 @@ export class InfiniteDrone extends Instrument {
     overtone.connect(otGain);
     otGain.connect(g);
     if (panner) {
-      panner.pan.value = Math.random() * 1.6 - 0.8;
+      panner.pan.value = rand() * 1.6 - 0.8;
       g.connect(panner);
       panner.connect(this.bellBus);
     } else {
@@ -228,7 +233,7 @@ export class InfiniteDrone extends Instrument {
     filter.connect(gain);
     gain.connect(this.output);
     lfo.start();
-    this.drone = { oscillators: [], filter, gain, lfo, lfoGain };
+    this.drone = { voices: [], filter, gain, lfo, lfoGain };
     this._buildDroneVoices();
   }
 
@@ -238,45 +243,61 @@ export class InfiniteDrone extends Instrument {
     return [p.rootHz, p.rootHz * colour, p.rootHz * p.period];
   }
 
+  _cents() {
+    return 2 + this.params.shimmer * 12;
+  }
+
+  // Built ONCE. Shimmer then glides detune and a key change glides frequency, so
+  // the oscillators are never hard-restarted (which clicked and churned per tick).
   _buildDroneVoices() {
     if (!this.drone) return;
     const ctx = this.ctx;
-    for (const o of this.drone.oscillators) {
-      try { o.stop(ctx.currentTime + 0.05); } catch (_) {}
-    }
-    const cents = 2 + this.params.shimmer * 12;
-    const oscillators = [];
-    this._droneFreqs().forEach((f, i) => {
-      const detunes = i === 0 ? [-cents, 0, cents] : [-cents, cents];
-      for (const det of detunes) {
+    const t = ctx.currentTime;
+    const cents = this._cents();
+    const voices = [];
+    this._droneFreqs().forEach((f, partial) => {
+      const signs = partial === 0 ? [-1, 0, 1] : [-1, 1];
+      const level = partial === 0 ? 0.5 : 0.28;
+      for (const sign of signs) {
         const osc = ctx.createOscillator();
         osc.type = "sawtooth";
         osc.frequency.value = f;
-        osc.detune.value = det;
+        osc.detune.value = sign * cents;
         const g = ctx.createGain();
-        g.gain.value = i === 0 ? 0.5 : 0.28;
+        g.gain.value = 0;
+        g.gain.setTargetAtTime(level, t, 0.4); // fade in — no click
         osc.connect(g);
         g.connect(this.drone.filter);
-        osc.start(ctx.currentTime);
-        oscillators.push(osc);
+        osc.start(t);
+        voices.push({ osc, sign, partial });
       }
     });
-    this.drone.oscillators = oscillators;
+    this.drone.voices = voices;
+  }
+
+  _updateShimmer() {
+    if (!this.drone) return;
+    const cents = this._cents();
+    const t = this.ctx.currentTime;
+    for (const v of this.drone.voices) v.osc.detune.setTargetAtTime(v.sign * cents, t, 0.15);
   }
 
   _retuneDrone() {
-    if (this.drone) this._buildDroneVoices();
+    if (!this.drone) return;
+    const freqs = this._droneFreqs();
+    const t = this.ctx.currentTime;
+    for (const v of this.drone.voices) v.osc.frequency.setTargetAtTime(freqs[v.partial], t, 1.5);
   }
 
   _stopDrone() {
     if (!this.drone) return;
     const ctx = this.ctx;
-    const { oscillators, gain, lfo } = this.drone;
+    const { voices, gain, lfo } = this.drone;
     const t = ctx.currentTime;
     gain.gain.setTargetAtTime(0, t, 0.6);
     const stopAt = t + 3;
-    for (const osc of oscillators) {
-      try { osc.stop(stopAt); } catch (_) {}
+    for (const v of voices) {
+      try { v.osc.stop(stopAt); } catch (_) {}
     }
     lfo.stop(stopAt);
     this.drone = null;

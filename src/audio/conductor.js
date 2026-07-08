@@ -53,7 +53,7 @@ export class Conductor {
     this._subs = new Map(); // type -> Set<handler>
 
     // shared timbre/energy field (live, read synchronously by instruments)
-    this.field = { energy: 0, brightness: 0.4, density: 0, lowEnergy: 1 };
+    this.field = { energy: 0, brightness: 0.4, density: 0 };
     this._reports = new Map(); // instrumentId -> { density, ... }
     this._freqData = new Uint8Array(audio.analyser.frequencyBinCount);
     this._fieldRaf = null;
@@ -84,8 +84,14 @@ export class Conductor {
     this.stepIndex = 0;
     this.barIndex = 0;
     this.emit("key", { key: this.key, piece: this.piece });
-    // Give instruments an immediate harmony frame at the new key.
-    this.emit("harmony", this._harmonyPayload(this.ctx.currentTime + 0.05));
+    if (this.running) {
+      // Realign the clock so its NEXT scheduled step is bar 0 — a single harmony
+      // source. (Emitting a frame here too would double-trigger instruments.)
+      this.nextStepTime = this.ctx.currentTime + 0.08;
+    } else {
+      // Stopped: hand listeners one harmony frame to settle the display on.
+      this.emit("harmony", this._harmonyPayload(this.ctx.currentTime + 0.05));
+    }
     return this.key;
   }
 
@@ -130,17 +136,21 @@ export class Conductor {
     this._reports.set(instrumentId, state);
   }
 
+  // Drop an instrument's contribution to the shared field when it's disposed,
+  // so its density doesn't linger and the Map doesn't grow unbounded.
+  unreport(instrumentId) {
+    this._reports.delete(instrumentId);
+  }
+
   _sampleField() {
     const a = this.audio.analyser;
     a.getByteFrequencyData(this._freqData);
     const d = this._freqData;
     const n = d.length;
-    let lowSum = 0, allSum = 0, wsum = 0, wcount = 0;
-    const lowCut = Math.floor(n * 0.08);
+    let allSum = 0, wsum = 0, wcount = 0;
     for (let i = 0; i < n; i++) {
       const v = d[i] / 255;
       allSum += v;
-      if (i < lowCut) lowSum += v;
       wsum += v * i; // for a rough spectral centroid
       wcount += v;
     }
@@ -152,7 +162,6 @@ export class Conductor {
     f.energy = lerp(f.energy, clamp(energy * 3, 0, 1), 0.08);
     f.brightness = lerp(f.brightness, clamp(centroid * 2.2, 0, 1), 0.06);
     f.density = lerp(f.density, clamp(density, 0, 1), 0.1);
-    f.lowEnergy = lerp(f.lowEnergy, clamp(lowSum / lowCut * 3, 0, 1), 0.08);
     this.emit("field", f);
   }
 

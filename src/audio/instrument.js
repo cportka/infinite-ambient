@@ -53,9 +53,9 @@ export class Instrument {
   }
 
   // Announce a note to the ensemble (see Conductor.announce).
-  announce(freq, when, velocity = 0.5, timbre = "tone") {
+  announce(freq, when, velocity = 0.5, timbre = "tone", index = null) {
     this.conductor.announce({
-      when, freq, velocity, timbre,
+      when, freq, velocity, timbre, index,
       instrument: this.id, role: this.meta.role, hue: this.meta.hue,
     });
   }
@@ -97,15 +97,23 @@ export class Instrument {
   getAnalyser() { return this.analyser; }
   isActive() { return this._active; }
 
+  // How long to keep the audio graph alive after stop() so a fade/tail can ring
+  // out before the nodes are disconnected. Subclasses with a pedal/tail override.
+  get tailMs() { return 200; }
+
   dispose() {
-    this.stop();
+    this.stop(); // lets onStop() fade/ring out
     for (const un of this._subs) un();
     this._subs = [];
-    try {
-      this.output.disconnect();
-      this.send.disconnect();
-      this.analyser.disconnect();
-    } catch (_) {}
+    if (this.conductor.unreport) this.conductor.unreport(this.id);
+    // Disconnect only after the tail has sounded, so closing a pane doesn't pop.
+    setTimeout(() => {
+      try {
+        this.output.disconnect();
+        this.send.disconnect();
+        this.analyser.disconnect();
+      } catch (_) {}
+    }, this.tailMs);
   }
 
   // Small envelope helper shared by voices: schedule an ADSR-ish gain.
