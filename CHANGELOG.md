@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows Keep
 (https://keepachangelog.com) and the project uses Semantic Versioning (https://semver.org).
 Every change bumps the version and adds an entry below.
 
+## [0.3.1] - 2026-07-08
+
+### Fixed
+- Transport race: toggling play/pause during the first `audio.resume()` (the
+  AudioContext starts suspended, so it genuinely awaits) could leave audio playing
+  while the button/aria/`is-playing` all read paused. `setPlaying` now has a
+  re-entrancy guard and commits state only after the work, painting the UI from
+  it — so a double-click or held spacebar can't desync audio and controls.
+
 ## [0.3.0] - 2026-07-08
 
 ### Added

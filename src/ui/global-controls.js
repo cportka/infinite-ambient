@@ -50,20 +50,31 @@ export function setupGlobalControls({ audio, conductor, paneManager }) {
   // --- transport ----------------------------------------------------------
   const playBtn = $("playAll");
   let playing = false;
-  async function setPlaying(next) {
-    playing = next;
-    if (playing) {
-      await audio.resume();
-      paneManager.startAll();
-      conductor.start();
-    } else {
-      conductor.stop();
-      paneManager.stopAll();
-    }
+  let busy = false; // re-entrancy guard: audio.resume() genuinely awaits on the
+  // first gesture, so a toggle landing mid-await must not race the state/UI.
+  function paintTransport() {
     playBtn.classList.toggle("playing", playing);
     playBtn.setAttribute("aria-pressed", String(playing));
     playBtn.querySelector(".label").textContent = playing ? "Pause" : "Play";
     document.body.classList.toggle("is-playing", playing);
+  }
+  async function setPlaying(next) {
+    if (busy || next === playing) return;
+    busy = true;
+    try {
+      if (next) {
+        await audio.resume();
+        paneManager.startAll();
+        conductor.start();
+      } else {
+        conductor.stop();
+        paneManager.stopAll();
+      }
+      playing = next; // commit only after the work; paint from it, never re-read mid-flight
+      paintTransport();
+    } finally {
+      busy = false;
+    }
   }
   playBtn.addEventListener("click", () => setPlaying(!playing));
   window.addEventListener("keydown", (e) => {
