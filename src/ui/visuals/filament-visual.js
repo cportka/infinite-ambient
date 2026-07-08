@@ -4,6 +4,8 @@
 // sonically. When it's silent the pool still breathes: faint idle drops and a
 // slow caustic shimmer keep it alive. Tinted around the instrument's amber hue.
 
+import { breathingField, analyserEnergy } from "./field.js";
+
 const LIFE = 5.5; // seconds a ripple lives
 const FMIN = Math.log2(50);
 const FMAX = Math.log2(2400);
@@ -13,6 +15,7 @@ export function createFilamentVisual(canvas, instrument, conductor) {
   const hue = instrument.meta.hue;
   let w = 0, h = 0, t = 0, idleAt = 1.5;
   const ripples = [];
+  const freq = new Uint8Array(instrument.getAnalyser().frequencyBinCount);
 
   function drop(xNorm, yNorm, strength) {
     ripples.push({ x: xNorm, y: yNorm, age: 0, strength });
@@ -52,13 +55,9 @@ export function createFilamentVisual(canvas, instrument, conductor) {
     ctx.fillStyle = "rgba(8, 7, 14, 0.16)";
     ctx.fillRect(0, 0, w, h);
 
-    // Slow caustic shimmer — a couple of breathing bands so the surface moves.
-    ctx.globalCompositeOperation = "lighter";
-    for (let i = 0; i < 2; i++) {
-      const yy = h * (0.4 + i * 0.22) + Math.sin(t * 0.5 + i) * h * 0.03;
-      ctx.fillStyle = `hsla(${hue + i * 12}, 70%, 55%, 0.03)`;
-      ctx.fillRect(0, yy, w, h * 0.12);
-    }
+    // Always-breathing water sheen beneath the ripples.
+    const energy = analyserEnergy(instrument.getAnalyser(), freq);
+    breathingField(ctx, w, h, t, hue, { energy, bands: 2, speed: 0.5, intensity: 0.7, baseY: 0.52 });
 
     const maxR = Math.min(w, h) * 0.6;
     for (let i = ripples.length - 1; i >= 0; i--) {

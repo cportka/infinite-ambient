@@ -75,6 +75,19 @@ export class Electricity extends Instrument {
     const ctx = this.ctx;
     const t = ctx.currentTime;
 
+    // A slow breath that swells the whole electric bed in and out, like the
+    // drone's pedal — everything continuous passes through it.
+    const breathGain = ctx.createGain();
+    breathGain.gain.value = 0.75;
+    breathGain.connect(this.output);
+    const breathLfo = ctx.createOscillator();
+    breathLfo.frequency.value = 0.06;
+    const breathDepth = ctx.createGain();
+    breathDepth.gain.value = 0.24;
+    breathLfo.connect(breathDepth);
+    breathDepth.connect(breathGain.gain);
+    breathLfo.start(t);
+
     // HUM: sawtooth fundamental + two harmonics through a lowpass, with tremolo.
     const humGain = ctx.createGain();
     humGain.gain.value = 0;
@@ -83,7 +96,15 @@ export class Electricity extends Instrument {
     humFilter.type = "lowpass";
     humFilter.frequency.value = 1400;
     humFilter.connect(humGain);
-    humGain.connect(this.output);
+    humGain.connect(breathGain);
+    // Slow filter breathing on the hum — the timbre opens and closes.
+    const humLfo = ctx.createOscillator();
+    humLfo.frequency.value = 0.05;
+    const humLfoGain = ctx.createGain();
+    humLfoGain.gain.value = 550;
+    humLfo.connect(humLfoGain);
+    humLfoGain.connect(humFilter.frequency);
+    humLfo.start(t);
     const f0 = this._humFreq();
     const humOscs = [];
     [[1, 0.6], [2, 0.3], [3, 0.16]].forEach(([mult, lvl]) => {
@@ -132,7 +153,7 @@ export class Electricity extends Instrument {
     noiseSrc.connect(bp);
     bp.connect(ring);
     ring.connect(interGain);
-    interGain.connect(this.output);
+    interGain.connect(breathGain);
     noiseSrc.start(t);
     bpLfo.start(t);
     modOsc.start(t);
@@ -149,14 +170,14 @@ export class Electricity extends Instrument {
     jitGain.gain.value = this.params.jitter * 0.06;
     jitSaw.connect(jitBp);
     jitBp.connect(jitGain);
-    jitGain.connect(this.output);
+    jitGain.connect(breathGain);
     jitSaw.start(t);
 
     this.layers = {
-      humGain, humFilter, humOscs, trem, tremGain,
+      breathGain, humGain, humFilter, humOscs, trem, tremGain,
       noiseSrc, bp, bpLfo, modOsc, interGain,
       jitSaw, jitBp, jitGain,
-      nodes: [trem, bpLfo, modOsc, noiseSrc, jitSaw, ...humOscs.map((o) => o.osc)],
+      nodes: [breathLfo, humLfo, trem, bpLfo, modOsc, noiseSrc, jitSaw, ...humOscs.map((o) => o.osc)],
     };
   }
 

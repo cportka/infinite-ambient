@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows Keep
 (https://keepachangelog.com) and the project uses Semantic Versioning (https://semver.org).
 Every change bumps the version and adds an entry below.
 
+## [0.4.1] - 2026-07-08
+
+### Fixed
+- Electricity and Explosions now **pulse and breathe** like the drone. Electricity
+  routes its continuous layers (hum/interference/jitter) through a slow breath LFO
+  with a slow filter sweep on the hum; Explosions gains a continuous, slowly
+  breathing low **rumble bed** beneath the hits.
+- Their **visuals no longer go dead**: a shared always-animating "breathing field"
+  base (a generalised aurora — flowing bands + a drifting, pulsing glow, tinted per
+  instrument) now underlies Electricity, Explosions, and Filament, so every pane
+  keeps moving and breathing even at rest, with the event-driven bolts / shockwaves
+  / ripples layered on top.
+
 ## [0.4.0] - 2026-07-08
 
 ### Added
