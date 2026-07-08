@@ -7,6 +7,17 @@ import { NAMED_KEYS, DEFAULT_KEY } from "../audio/presets.js";
 export function setupGlobalControls({ audio, conductor, paneManager }) {
   const $ = (id) => document.getElementById(id);
 
+  // Safety net: some browsers need the AudioContext resumed inside a user gesture
+  // and can leave a page-load context suspended. Resume on the very first gesture
+  // anywhere (in addition to the Play handler), then detach.
+  const kick = () => {
+    audio.resume();
+    window.removeEventListener("pointerdown", kick, true);
+    window.removeEventListener("keydown", kick, true);
+  };
+  window.addEventListener("pointerdown", kick, true);
+  window.addEventListener("keydown", kick, true);
+
   // --- key ----------------------------------------------------------------
   const keyInput = $("keyInput");
   const chipsWrap = $("keyChips");

@@ -3,8 +3,6 @@
 // slow, hats small and quick — so the visual reads the same slow↔fast continuum as
 // the sound. Embers drift upward when it's quiet so it never goes dead. Warm hue.
 
-import { breathingField, analyserEnergy } from "./field.js";
-
 const SHAPE = {
   kick: { life: 1.3, rad: 0.5, deb: 6, w: 2.4 },
   boom: { life: 2.6, rad: 0.7, deb: 10, w: 2.8 },
@@ -15,11 +13,10 @@ const SHAPE = {
 export function createExplosionsVisual(canvas, instrument, conductor) {
   const ctx = canvas.getContext("2d");
   const hue = instrument.meta.hue;
-  let w = 0, h = 0, t = 0, emberAt = 0.8;
+  let w = 0, h = 0, t = 0, emberAt = 0.8, idleRingAt = 1.0;
   const waves = [];
   const debris = [];
   const embers = [];
-  const freq = new Uint8Array(instrument.getAnalyser().frequencyBinCount);
 
   const unsub = conductor.on("note", (n) => {
     if (n.instrument !== instrument.id) return;
@@ -52,12 +49,25 @@ export function createExplosionsVisual(canvas, instrument, conductor) {
     ctx.globalCompositeOperation = "source-over";
     ctx.fillStyle = "rgba(12, 6, 4, 0.24)";
     ctx.fillRect(0, 0, w, h);
-
-    // Always-breathing warm field — a smouldering glow that swells and recedes.
-    const energy = analyserEnergy(instrument.getAnalyser(), freq);
-    breathingField(ctx, w, h, t, hue, { energy, bands: 2, speed: 0.7, intensity: 0.85, baseY: 0.55 });
-
     ctx.globalCompositeOperation = "lighter";
+
+    // Breathing smoulder core — a warm glow that swells like distant fires.
+    const breath = 0.5 + 0.5 * Math.sin(t * 0.4);
+    const gx = w * (0.5 + Math.sin(t * 0.5) * 0.16);
+    const gy = h * (0.62 + Math.cos(t * 0.4) * 0.1);
+    const gr = Math.min(w, h) * (0.3 + 0.16 * breath);
+    const cgrad = ctx.createRadialGradient(gx, gy, 0, gx, gy, gr);
+    cgrad.addColorStop(0, `hsla(${hue + 8}, 95%, 55%, ${0.05 + 0.06 * breath})`);
+    cgrad.addColorStop(1, `hsla(${hue}, 95%, 55%, 0)`);
+    ctx.fillStyle = cgrad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Faint idle shockwaves — distant rumbles keep it moving during the quiet.
+    if (t > idleRingAt) {
+      waves.push({ x: w * (0.3 + Math.random() * 0.4), y: h * (0.45 + Math.random() * 0.25), age: 0, life: 2.2, maxR: Math.min(w, h) * 0.3, w: 1.3, hueJ: 0 });
+      idleRingAt = t + 2.0 + Math.random() * 2.4;
+    }
+
     // Idle embers rising, so the pane keeps moving in the quiet.
     if (t > emberAt) {
       embers.push({ x: Math.random() * w, y: h + 4, vy: -(8 + Math.random() * 22), age: 0, life: 3 + Math.random() * 3 });

@@ -26,7 +26,7 @@ export const meta = {
   name: "Filament",
   role: "lead",
   hue: 38, // amber/gold — deliberate contrast to the drone's violet
-  gain: 0.7,
+  gain: 0.95,
   blurb: "Plucked microtonal strings that answer the drone, echo, and melt into the bed.",
   params: [
     { key: "presence", label: "Presence", min: 0, max: 1, step: 0.01, default: 0.5 },
@@ -140,7 +140,7 @@ export class Filament extends Instrument {
     const src = ctx.createBufferSource();
     src.buffer = buffer;
     const g = ctx.createGain();
-    const peak = 0.22 * clamp(velocity, 0, 1);
+    const peak = 0.32 * clamp(velocity, 0, 1);
     // Tiny attack removes the click of starting mid-noise-burst.
     g.gain.setValueAtTime(0, when);
     g.gain.linearRampToValueAtTime(peak, when + 0.004);

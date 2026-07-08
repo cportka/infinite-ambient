@@ -22,7 +22,7 @@ export const meta = {
   name: "Explosions",
   role: "rhythm",
   hue: 20, // warm orange/red
-  gain: 0.7,
+  gain: 0.8,
   blurb: "Explosive arpeggiating beats — slow to ambient booms, fast to a drum machine.",
   params: [
     { key: "scale", label: "Scale", min: 0, max: 1, step: 0.01, default: 0.5 },
@@ -36,10 +36,10 @@ export const meta = {
 // Per-voice character. `dec` scales the (scale-derived) size; the swept lowpass
 // goes lpFrom → lpTo across the decay.
 const VOICE = {
-  kick: { lpFrom: 1400, lpTo: 55, noise: 0.5, thump: 1.0, ratio: 4, sub: 1.0, dec: 0.55, peak: 0.6 },
-  snare: { lpFrom: 6500, lpTo: 1100, noise: 1.0, thump: 0.3, ratio: 3, sub: 0.12, dec: 0.34, peak: 0.42, bp: true },
-  hat: { lpFrom: 14000, lpTo: 6500, noise: 0.85, thump: 0, ratio: 1, sub: 0, dec: 0.16, peak: 0.26, hp: true },
-  boom: { lpFrom: 3200, lpTo: 110, noise: 0.7, thump: 0.85, ratio: 3, sub: 1.0, dec: 1.0, peak: 0.58 },
+  kick: { lpFrom: 1400, lpTo: 55, noise: 0.5, thump: 1.0, ratio: 4, sub: 1.0, dec: 0.55, peak: 0.75 },
+  snare: { lpFrom: 6500, lpTo: 1100, noise: 1.0, thump: 0.3, ratio: 3, sub: 0.12, dec: 0.34, peak: 0.55, bp: true },
+  hat: { lpFrom: 14000, lpTo: 6500, noise: 0.85, thump: 0, ratio: 1, sub: 0, dec: 0.16, peak: 0.34, hp: true },
+  boom: { lpFrom: 3200, lpTo: 110, noise: 0.7, thump: 0.85, ratio: 3, sub: 1.0, dec: 1.0, peak: 0.72 },
 };
 
 export class Explosions extends Instrument {
