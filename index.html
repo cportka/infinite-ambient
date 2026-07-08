@@ -6,7 +6,7 @@
     <title>Infinite Ambient — endless generative soundscapes</title>
     <meta
       name="description"
-      content="An infinite, endlessly customizable stream of generative ambient music. Runs entirely in your browser — no accounts, no uploads, no repeats."
+      content="An infinite, endlessly customizable stream of generative ambient music. A key unlocks a piece — microtonal, interval-based, and it never repeats. Runs entirely in your browser."
     />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
@@ -17,7 +17,7 @@
     <main class="panel" role="main">
       <header class="masthead">
         <h1>Infinite&nbsp;Ambient</h1>
-        <p class="tagline">An endless, ever-shifting soundscape. It never repeats.</p>
+        <p class="tagline">A key unlocks a piece. It never repeats.</p>
       </header>
 
       <button id="playBtn" class="play" aria-pressed="false" aria-label="Play or pause">
@@ -25,15 +25,33 @@
         <span class="label">Play</span>
       </button>
 
-      <section class="presets-section" aria-label="Mood presets">
-        <h2 class="section-title">Mood</h2>
-        <div id="presets" class="presets"></div>
+      <section class="key-section" aria-label="The key">
+        <h2 class="section-title">Key</h2>
+        <div class="key-row">
+          <input
+            id="keyInput"
+            class="key-input"
+            type="text"
+            spellcheck="false"
+            autocomplete="off"
+            aria-label="Key — a string that unlocks a piece"
+          />
+          <button id="keyApply" class="key-btn" title="Unlock this key">unlock</button>
+          <button id="keyNew" class="key-btn" title="Generate a new key">🎲</button>
+          <button id="keyCopy" class="key-btn" title="Copy the key to share">copy</button>
+        </div>
+        <p class="key-hint">The key seeds the whole piece — share it and it recreates note-for-note.</p>
+        <div id="keys" class="keys"></div>
       </section>
 
       <section class="controls" aria-label="Sound controls">
         <div class="control">
-          <label for="density">Density <span class="readout" data-readout="density"></span></label>
-          <input id="density" type="range" min="0" max="1" step="0.01" />
+          <label for="motion">Motion <span class="readout" data-readout="motion"></span></label>
+          <input id="motion" type="range" min="0" max="1" step="0.01" />
+        </div>
+        <div class="control">
+          <label for="shimmer">Shimmer <span class="readout" data-readout="shimmer"></span></label>
+          <input id="shimmer" type="range" min="0" max="1" step="0.01" />
         </div>
         <div class="control">
           <label for="brightness">Brightness <span class="readout" data-readout="brightness"></span></label>
@@ -51,19 +69,9 @@
           <label for="volume">Volume <span class="readout" data-readout="volume"></span></label>
           <input id="volume" type="range" min="0" max="1" step="0.01" />
         </div>
-
-        <div class="control control--select">
-          <label for="key">Key</label>
-          <select id="key"></select>
-        </div>
-        <div class="control control--select">
-          <label for="scale">Scale</label>
-          <select id="scale"></select>
-        </div>
       </section>
 
       <footer class="foot">
-        <button id="randomBtn" class="ghost">↺ New atmosphere</button>
         <span class="hint">Press <kbd>space</kbd> to play / pause</span>
       </footer>
     </main>

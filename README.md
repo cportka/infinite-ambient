@@ -1,23 +1,44 @@
 # infinite-ambient
 
-> **Version:** 0.1.0
+> **Version:** 0.2.0
 
 An infinite stream of ambient music, endlessly customizable — generated live in your browser.
 
 **▶ Live: https://cportka.github.io/infinite-ambient/**
 
-No accounts, no uploads, no audio files, no repeats. A small generative engine built on the Web
-Audio API layers a drone, evolving chord pads, a soft bass, and sparse bell tones over a slow
-pulse; the harmony drifts through the current scale — and occasionally the key or scale itself
-shifts — so the stream never resolves and never loops.
+No accounts, no uploads, no audio files, no repeats. A **key** (any string) unlocks a piece: hashed,
+it seeds the root, the intervals, and the whole evolution, so the same key recreates the same piece
+note-for-note. Share the key, share the piece. A small Web Audio engine layers a microtonal drone,
+evolving pads, a soft bass, an interval-leaping arpeggio, and sparse bells over a slow pulse.
+
+## The key
+
+The centrepiece is a single **key**. It's just a string — `aurora`, `tidewater`, a random
+`vel-drin-42`, or anything you type. It deterministically seeds the entire piece, so:
+
+- the same key always plays the same piece, from the same starting point;
+- a new key is a whole new piece;
+- copy your key and hand it to someone — they hear exactly what you heard.
+
+## Not Western scales
+
+There are no note names, no C-major keys, no 12-tone grid. Pitch is built from frequency **ratios** —
+intervals matter more than notes:
+
+- an **equal division of a period** (often non-12: 5, 7, 13, 17… EDO) with a coprime generator
+  stacked into a moment-of-symmetry scale, **or** a **just-intonation** subset reaching into the
+  7- and 11-limit;
+- **continuous roots** that float off the A440 grid, and periods that can be **stretched octaves**
+  or the **3/1 tritave** (no octaves at all) — the source of the drone's microtonal shimmer.
 
 ## Features
 
-- **Truly generative** — every note is scheduled live; nothing is pre-recorded, so it plays
-  forever without repeating.
-- **Six mood presets** — Nebula, Sunrise, Undertow, Glass, Dusk, Reverie.
-- **Live controls** — Density, Brightness, Space (reverb), Pace, Volume, plus Key and Scale.
-- **New atmosphere** — one click reshuffles key, scale, and texture.
+- **Truly generative & deterministic** — every note is scheduled live from the key; nothing is
+  pre-recorded, it never repeats, yet it's perfectly reproducible.
+- **Five voices** — microtonal beating drone, pads, bass, an interval arpeggio, and bells.
+- **Named keys** — Aurora, Deep Field, Tidewater, Glass Rain, Monolith, Petrichor — plus type-your-own
+  and a randomiser.
+- **Live controls** — Motion, Shimmer, Brightness, Space (reverb), Pace, Volume.
 - **Reactive visuals** — an aurora canvas that breathes with the audio.
 - **Zero dependencies, zero build** — plain ES modules + Web Audio. Static files, hostable
   anywhere. Works offline once loaded.
@@ -43,9 +64,9 @@ src/
   main.js             wires engine + visualizer + controls
   audio/
     engine.js         lookahead scheduler + voice synthesis
-    scales.js         pure music-theory helpers (unit-tested)
+    piece.js          seed → deterministic microtonal piece (unit-tested)
     reverb.js         synthesised convolution impulse
-    presets.js        mood parameter bundles
+    presets.js        curated named keys
   ui/
     controls.js       DOM <-> engine bindings
     visualizer.js     canvas aurora driven by the analyser
