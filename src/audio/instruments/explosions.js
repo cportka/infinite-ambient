@@ -59,6 +59,63 @@ export class Explosions extends Instrument {
     return 4200; // a slow ambient boom can ring ~3.6s — let it finish before disconnect
   }
 
+  onStart() { this._startBed(); }
+  onStop() { this._stopBed(); }
+
+  onParam(name, value) {
+    if (name === "boom" && this.bed) {
+      this.bed.g.gain.setTargetAtTime(0.05 * (0.4 + value), this.ctx.currentTime, 0.3);
+    }
+  }
+
+  // A continuous low rumble that slowly breathes — the smouldering undercurrent
+  // between hits, so the instrument pulses AND breathes like the drone.
+  _startBed() {
+    const ctx = this.ctx;
+    const t = ctx.currentTime;
+    const src = ctx.createBufferSource();
+    src.buffer = this._noise;
+    src.loop = true;
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 120;
+    lp.Q.value = 0.7;
+    const g = ctx.createGain();
+    const level = 0.05 * (0.4 + this.params.boom);
+    g.gain.value = 0;
+    g.gain.setTargetAtTime(level, t, 2.0);
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.05;
+    const depth = ctx.createGain();
+    depth.gain.value = level * 0.7; // breathe around the base level
+    lfo.connect(depth);
+    depth.connect(g.gain);
+    const flfo = ctx.createOscillator();
+    flfo.frequency.value = 0.04;
+    const fdepth = ctx.createGain();
+    fdepth.gain.value = 55;
+    flfo.connect(fdepth);
+    fdepth.connect(lp.frequency);
+    src.connect(lp);
+    lp.connect(g);
+    g.connect(this.output);
+    src.start(t);
+    lfo.start(t);
+    flfo.start(t);
+    this.bed = { src, lp, g, lfo, flfo };
+  }
+
+  _stopBed() {
+    if (!this.bed) return;
+    const t = this.ctx.currentTime;
+    this.bed.g.gain.setTargetAtTime(0, t, 0.5);
+    const stopAt = t + 2;
+    for (const n of [this.bed.src, this.bed.lfo, this.bed.flfo]) {
+      try { n.stop(stopAt); } catch (_) {}
+    }
+    this.bed = null;
+  }
+
   _onPulse(p) {
     if (!this._active) return;
     const rng = stepRng(this.conductor.piece.seedInt ^ SALT, p.index);

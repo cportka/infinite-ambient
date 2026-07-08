@@ -3,6 +3,8 @@
 // slow, hats small and quick — so the visual reads the same slow↔fast continuum as
 // the sound. Embers drift upward when it's quiet so it never goes dead. Warm hue.
 
+import { breathingField, analyserEnergy } from "./field.js";
+
 const SHAPE = {
   kick: { life: 1.3, rad: 0.5, deb: 6, w: 2.4 },
   boom: { life: 2.6, rad: 0.7, deb: 10, w: 2.8 },
@@ -17,6 +19,7 @@ export function createExplosionsVisual(canvas, instrument, conductor) {
   const waves = [];
   const debris = [];
   const embers = [];
+  const freq = new Uint8Array(instrument.getAnalyser().frequencyBinCount);
 
   const unsub = conductor.on("note", (n) => {
     if (n.instrument !== instrument.id) return;
@@ -49,8 +52,12 @@ export function createExplosionsVisual(canvas, instrument, conductor) {
     ctx.globalCompositeOperation = "source-over";
     ctx.fillStyle = "rgba(12, 6, 4, 0.24)";
     ctx.fillRect(0, 0, w, h);
-    ctx.globalCompositeOperation = "lighter";
 
+    // Always-breathing warm field — a smouldering glow that swells and recedes.
+    const energy = analyserEnergy(instrument.getAnalyser(), freq);
+    breathingField(ctx, w, h, t, hue, { energy, bands: 2, speed: 0.7, intensity: 0.85, baseY: 0.55 });
+
+    ctx.globalCompositeOperation = "lighter";
     // Idle embers rising, so the pane keeps moving in the quiet.
     if (t > emberAt) {
       embers.push({ x: Math.random() * w, y: h + 4, vy: -(8 + Math.random() * 22), age: 0, life: 3 + Math.random() * 3 });

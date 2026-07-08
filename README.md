@@ -1,6 +1,6 @@
 # infinite-ambient
 
-> **Version:** 0.4.0
+> **Version:** 0.4.1
 
 An infinite generative ambient **rack** — a set of instruments that play together and listen to
 each other — generated live in your browser.

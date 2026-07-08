@@ -1,7 +1,9 @@
-// electricity-visual.js — arcs and lightning. Big cracks (thunder) throw a jagged
-// bolt across the pane with a screen flash; small crackle spawns short arcs. A
-// faint hum scanline and drifting sparks keep the field alive when it's quiet.
-// Tinted around the instrument's electric-cyan hue.
+// electricity-visual.js — a breathing electric plasma field that's always alive,
+// with lightning on top. Big cracks (thunder) throw a jagged bolt + a screen
+// flash; crackle spawns short arcs; a faint hum scanline and drifting sparks give
+// it constant motion. Tinted around the instrument's electric-cyan hue.
+
+import { breathingField, analyserEnergy } from "./field.js";
 
 export function createElectricityVisual(canvas, instrument, conductor) {
   const ctx = canvas.getContext("2d");
@@ -9,6 +11,7 @@ export function createElectricityVisual(canvas, instrument, conductor) {
   let w = 0, h = 0, t = 0, flash = 0, sparkAt = 1;
   const bolts = [];
   const sparks = [];
+  const freq = new Uint8Array(instrument.getAnalyser().frequencyBinCount);
 
   function makeBolt(big) {
     const x0 = w * (0.1 + Math.random() * 0.8);
@@ -43,21 +46,24 @@ export function createElectricityVisual(canvas, instrument, conductor) {
     if (!w || !h) resize();
     const step = dt || 0.016;
     t += step;
+    const energy = analyserEnergy(instrument.getAnalyser(), freq);
 
     ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = "rgba(4, 8, 14, 0.30)";
+    ctx.fillStyle = "rgba(4, 8, 14, 0.26)";
     ctx.fillRect(0, 0, w, h);
-    ctx.globalCompositeOperation = "lighter";
 
-    // Idle hum: a couple of faint flickering scanlines that drift vertically.
+    // Always-breathing plasma base (faster, jitterier than the drone's aurora).
+    breathingField(ctx, w, h, t, hue, { energy, bands: 2, speed: 1.6, intensity: 0.9 });
+
+    ctx.globalCompositeOperation = "lighter";
+    // Hum scanlines drifting.
     for (let i = 0; i < 2; i++) {
       const y = ((t * (12 + i * 7)) % (h + 40)) - 20;
-      const a = 0.03 + 0.02 * Math.sin(t * 30 + i);
-      ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${a})`;
+      ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${0.03 + 0.02 * Math.sin(t * 30 + i)})`;
       ctx.fillRect(0, y, w, 2);
     }
 
-    // Idle sparks so it keeps moving in the quiet.
+    // Drifting sparks.
     if (t > sparkAt) {
       sparks.push({ x: Math.random() * w, y: Math.random() * h, age: 0, vx: (Math.random() * 2 - 1) * 20, vy: (Math.random() * 2 - 1) * 20 });
       sparkAt = t + 0.25 + Math.random() * 0.6;
@@ -71,14 +77,12 @@ export function createElectricityVisual(canvas, instrument, conductor) {
       ctx.fillRect(s.x, s.y, 1.5, 1.5);
     }
 
-    // Screen flash from a big strike.
     if (flash > 0.001) {
       ctx.fillStyle = `hsla(${hue}, 70%, 80%, ${flash * 0.16})`;
       ctx.fillRect(0, 0, w, h);
-      flash *= Math.pow(0.02, step); // fast decay
+      flash *= Math.pow(0.02, step);
     }
 
-    // Bolts.
     for (let i = bolts.length - 1; i >= 0; i--) {
       const b = bolts[i];
       b.age += step;
