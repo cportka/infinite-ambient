@@ -5,6 +5,11 @@ import { createAudioSystem } from "./audio/context.js";
 import { Conductor } from "./audio/conductor.js";
 import { PaneManager } from "./ui/pane-manager.js";
 import { setupGlobalControls } from "./ui/global-controls.js";
+import { VERSION } from "./version.js";
+
+// Stamp the version next to the title.
+const versionEl = document.getElementById("version");
+if (versionEl) versionEl.textContent = `v${VERSION}`;
 
 const audio = createAudioSystem();
 const conductor = new Conductor(audio);

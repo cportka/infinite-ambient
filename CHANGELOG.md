@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format follows Keep
 (https://keepachangelog.com) and the project uses Semantic Versioning (https://semver.org).
 Every change bumps the version and adds an entry below.
 
+## [0.4.0] - 2026-07-08
+
+### Added
+- **New instrument — Electricity** (texture, cyan): a mains-like **hum** tuned to
+  the shared root, ring-modulated noise **interference** with crackle, a **storm**
+  of lightning cracks (big ones favour energy peaks and drop into a thunder rumble),
+  and **sawtooth jitter** magnetism that re-steps on every pulse. Lightning-bolt
+  visual with an idle electric field.
+- **New instrument — Explosions** (rhythm, amber-red): synthesised explosions
+  (noise burst + pitch-diving thump + sub boom, with an optional reverse "swallow").
+  One **Scale** knob morphs super-slow ambient booms ↔ a fast Maestro Rhythm-King-
+  style drum machine (kick / backbeat snare / offbeat hats); in between it's a
+  melodic **arpeggiating explosive beat** across the gamut. Shockwave-ring visual.
+- **Version badge** shown next to the header (`src/version.js`, kept in sync with
+  package.json by a test).
+- Shared seeded noise-buffer helper (`src/audio/noise.js`).
+
+### Changed
+- **Filament** now melts into the soundscape: a filtered **feedback delay** (new
+  **Melt** control) and longer sustain, so plucks echo and blur into the bed. Its
+  visual is now **ripples in a puddle** — expanding rings that linger and drift,
+  with idle drops and a caustic shimmer so it keeps moving during near-silence.
+
 ## [0.3.1] - 2026-07-08
 
 ### Fixed

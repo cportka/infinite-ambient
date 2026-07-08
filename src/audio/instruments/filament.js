@@ -27,12 +27,13 @@ export const meta = {
   role: "lead",
   hue: 38, // amber/gold — deliberate contrast to the drone's violet
   gain: 0.7,
-  blurb: "Plucked microtonal strings that answer the drone and fill the gaps.",
+  blurb: "Plucked microtonal strings that answer the drone, echo, and melt into the bed.",
   params: [
     { key: "presence", label: "Presence", min: 0, max: 1, step: 0.01, default: 0.5 },
     { key: "tone", label: "Tone", min: 0, max: 1, step: 0.01, default: 0.55 },
-    { key: "sustain", label: "Sustain", min: 0, max: 1, step: 0.01, default: 0.5 },
-    { key: "space", label: "Space", min: 0, max: 1, step: 0.01, default: 0.4 },
+    { key: "sustain", label: "Sustain", min: 0, max: 1, step: 0.01, default: 0.62 },
+    { key: "melt", label: "Melt", min: 0, max: 1, step: 0.01, default: 0.5 },
+    { key: "space", label: "Space", min: 0, max: 1, step: 0.01, default: 0.55 },
   ],
 };
 
@@ -50,7 +51,23 @@ export class Filament extends Instrument {
     this.hp = ctx.createBiquadFilter();
     this.hp.type = "highpass";
     this.hp.frequency.value = 160;
-    this.hp.connect(this.output);
+    this.hp.connect(this.output); // dry
+
+    // Melt: a filtered feedback delay so each pluck echoes and smears into the
+    // soundscape instead of stopping dead. hp → delay → (lowpass) → output, with
+    // the lowpass feeding back into the delay for a decaying, darkening tail.
+    this.delay = ctx.createDelay(1.5);
+    this.delay.delayTime.value = 0.34;
+    this.fbFilter = ctx.createBiquadFilter();
+    this.fbFilter.type = "lowpass";
+    this.fbFilter.frequency.value = 2600;
+    this.fb = ctx.createGain();
+    this.fb.gain.value = 0.3 + this.params.melt * 0.45; // ~0.3 … 0.75
+    this.hp.connect(this.delay);
+    this.delay.connect(this.fbFilter);
+    this.fbFilter.connect(this.output); // wet
+    this.fbFilter.connect(this.fb);
+    this.fb.connect(this.delay); // feedback loop
 
     this.listen("harmony", (h) => this._onBar(h));
     // Remember the most recent melodic note another instrument announced (one that
@@ -58,6 +75,11 @@ export class Filament extends Instrument {
     this.listen("note", (n) => {
       if (n.instrument !== this.id && n.index != null) this.lastAnnounced = n;
     });
+  }
+
+  onParam(name, value) {
+    // Melt controls the echo tail's feedback (how long it smears).
+    if (name === "melt") this.fb.gain.setTargetAtTime(0.3 + value * 0.45, this.ctx.currentTime, 0.1);
   }
 
   _onBar(h) {
@@ -110,9 +132,9 @@ export class Filament extends Instrument {
   _pluck(freq, when, brightness, velocity, seed) {
     const ctx = this.ctx;
     const sustain = this.params.sustain;
-    const seconds = 1.0 + sustain * 2.6;
+    const seconds = 1.2 + sustain * 3.6; // longer strings — melt into the bed
     const blend = 0.5 + brightness * 0.45; // higher → brighter / longer sustain
-    const decayFactor = lerp(0.992, 0.9993, sustain);
+    const decayFactor = lerp(0.993, 0.9997, sustain);
     const buffer = ksBuffer(ctx, freq, seconds, blend, decayFactor, mulberry32(seed));
 
     const src = ctx.createBufferSource();
