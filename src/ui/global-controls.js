@@ -40,9 +40,12 @@ export function setupGlobalControls({ audio, conductor, paneManager }) {
     keyInput.value = conductor.key;
     markChip(conductor.key);
   }
-  $("keyApply").addEventListener("click", () => loadKey(keyInput.value));
+  // Apply a typed key on Enter or when the field loses focus — no cryptic button.
   keyInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") loadKey(keyInput.value);
+    if (e.key === "Enter") { loadKey(keyInput.value); keyInput.blur(); }
+  });
+  keyInput.addEventListener("blur", () => {
+    if (keyInput.value.trim() && keyInput.value.trim() !== conductor.key) loadKey(keyInput.value);
   });
   $("keyNew").addEventListener("click", () => {
     import("../audio/piece.js").then(({ randomKey }) => loadKey(randomKey()));
@@ -51,8 +54,8 @@ export function setupGlobalControls({ audio, conductor, paneManager }) {
     const btn = $("keyCopy");
     try {
       await navigator.clipboard.writeText(conductor.key);
-      btn.textContent = "copied";
-      setTimeout(() => (btn.textContent = "copy"), 1200);
+      btn.textContent = "Copied ✓";
+      setTimeout(() => (btn.textContent = "Copy"), 1200);
     } catch (_) {
       keyInput.select();
     }

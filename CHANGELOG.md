@@ -4,6 +4,32 @@ All notable changes to this project are documented here. The format follows Keep
 (https://keepachangelog.com) and the project uses Semantic Versioning (https://semver.org).
 Every change bumps the version and adds an entry below.
 
+## [0.5.0] - 2026-07-08
+
+### Added
+- **Surpeti** — a new drone instrument: an Indian shruti-box / reed drone. Paired
+  free-reed tones (Sa/Pa/Sa'/Ma) tuned to the shared root via the piece's own
+  intervals, a soft-clip + formant reed timbre, characteristic beating, gentle
+  vibrato, and a slow bellows breath. Breathing-mandala visual (rose).
+- **Fire** — a new element: a breathing filtered-noise roar bed, constant warm
+  crackle grains, and occasional flares licking up. Flame-tongue visual (red-orange).
+- **Water** — a new element: a flowing brook bed, rising "bloop" bubbles, and
+  pitched drips drawn from the gamut (they ring in tune and are announced for
+  call-and-response). Flowing-ripple + droplet-ring visual (blue).
+
+### Changed
+- **Explosions reworked.** Big hits are now proper **blasts** — a broadband crack,
+  a lowpass-swept saturated (waveshaper) rumble body, a deep pitch-diving sub, and
+  a scattered debris tail — they actually boom. The little hits are now **shrapnel**:
+  rhythmic bursts of tiny crackle grains (crinkle/titter/scatter) instead of drum
+  snare/hat. The Scale continuum now runs slow ambient blasts ↔ a fast shrapnel-
+  crackle drum machine.
+- **On load:** all instruments open but only **Infinite Drone** sounds (the rest
+  start muted), playback **auto-starts**, and the initial **volume is 50%**.
+- **Key UI redesigned** for clarity: a labelled "Key" with a one-line explanation,
+  a self-explanatory input (type + Enter, or blur), clearer **🎲 Random** / **Copy**
+  buttons (no more cryptic "unlock"), and a "Starters" row of preset chips.
+
 ## [0.4.2] - 2026-07-08
 
 ### Fixed

@@ -1,6 +1,6 @@
 # infinite-ambient
 
-> **Version:** 0.4.2
+> **Version:** 0.5.0
 
 An infinite generative ambient **rack** — a set of instruments that play together and listen to
 each other — generated live in your browser.
@@ -34,16 +34,20 @@ feed the broader field and the field frames the panes.
 
 - **Infinite Drone** *(bed, violet)* — the original engine: a microtonal beating pedal drone,
   evolving pads, soft bass, an interval-leaping arpeggio, and bells. Signature visual: the aurora.
-- **Filament** *(lead, amber)* — Karplus-Strong plucked microtonal strings, timbrally the opposite
-  of the drone. Locks to bars, answers the harmonic centre a register up, and reads the shared field
-  to lay back or fill the gaps. A **Melt** control (filtered feedback delay) lets the plucks echo
-  and blur into the bed. Visual: ripples in a puddle.
-- **Electricity** *(texture, cyan)* — states of electricity: a mains **hum** tuned to the root,
-  ring-modulated **interference**, a **storm** of lightning cracks + thunder, and **sawtooth jitter**
-  magnetism. Visual: lightning bolts over an electric field.
-- **Explosions** *(rhythm, amber-red)* — synthesised explosions on a continuum: super-slow **ambient
-  booms** ↔ a fast **Rhythm-King-style drum machine**, with a melodic **arpeggiating explosive beat**
-  in between (and a reverse "swallow" that sucks in before the blast). Visual: expanding shockwaves.
+- **Surpeti** *(bed, rose)* — an Indian shruti-box reed drone: paired free-reed tones (Sa/Pa/Sa'/Ma)
+  tuned to the root, harmonium buzz, beating, and a slow bellows breath. Visual: a breathing mandala.
+- **Filament** *(lead, amber)* — Karplus-Strong plucked microtonal strings that answer the drone,
+  echo (a **Melt** feedback delay), and melt into the bed. Visual: ripples in a puddle.
+- **Water** *(element, blue)* — a flowing brook (filtered-noise bed), rising "bloop" bubbles, and
+  pitched drips drawn from the gamut (they ring in tune and invite answers). Visual: flowing ripples
+  + droplet rings.
+- **Fire** *(element, red-orange)* — a breathing roar, constant warm crackle, and flames flaring up.
+  Visual: bottom-rooted flame tongues + rising embers.
+- **Electricity** *(texture, cyan)* — mains **hum**, ring-modulated **interference**, a **storm** of
+  lightning + thunder, and **sawtooth jitter** magnetism. Visual: lightning bolts over a plasma field.
+- **Explosions** *(rhythm, amber-red)* — big saturated **blasts** (crack + swept rumble + deep sub +
+  debris) and **shrapnel** trills (bursts of tiny crackle grains). Scale morphs slow ambient blasts ↔
+  a fast shrapnel-crackle drum machine. Visual: shockwaves + scatter.
 
 ## The key
 
@@ -104,21 +108,19 @@ src/
     noise.js                  shared seeded noise-buffer helper
     instruments/
       index.js                the instrument registry (drives the UI)
-      infinite-drone.js       instrument v1 — the bed
+      infinite-drone.js       drone / bed — the aurora
+      surpeti.js              shruti-box reed drone / bed
       filament.js             Karplus-Strong plucked strings — the lead
+      water.js                brook / bubbles / drips — element
+      fire.js                 roar / crackle / flares — element
       electricity.js          hum / interference / storm / jitter — texture
-      explosions.js           ambient booms ↔ drum machine — rhythm
+      explosions.js           blasts + shrapnel — rhythm
   version.js                  app version shown in the header
   ui/
     global-controls.js        shared key / transport / pace / volume / add
     pane.js                   one instrument's pane (visual + generic controls)
     pane-manager.js           panes + shared RAF + background compositor
-    visuals/
-      background.js           whole-ensemble compositor
-      drone-visual.js         the aurora
-      filament-visual.js      the puddle ripples
-      electricity-visual.js   lightning bolts
-      explosions-visual.js    shockwaves
+    visuals/                  one <id>-visual.js per instrument + background.js
 tests/                        node --test suite + version sync
 ```
 

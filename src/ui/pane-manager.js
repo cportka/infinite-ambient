@@ -26,13 +26,14 @@ export class PaneManager {
     return this.panes.map((p) => p.instrument);
   }
 
-  addInstrument(id) {
+  addInstrument(id, opts = {}) {
     const entry = byId(id);
     if (!entry) return null;
     const instrument = entry.create(this.conductor, this.audio);
     // Unique per-instance id so duplicate instruments don't collide on their
     // note/report/visual routing (meta.id stays the type; instrument.id is the instance).
     instrument.id = `${id}-${++this._seq}`;
+    if (opts.muted) instrument.setMuted(true); // before the pane so its button reflects it
     const pane = new Pane(instrument, entry.createVisual, this.conductor, {
       onClose: (p) => this.removePane(p),
     });

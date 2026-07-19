@@ -13,7 +13,7 @@ export function createAudioSystem() {
   const ctx = new Ctx();
 
   const master = ctx.createGain();
-  master.gain.value = 0.9;
+  master.gain.value = 0.5; // initial volume 50% (the slider mirrors this)
 
   // A gentle limiter keeps a stack of simultaneous instruments from clipping.
   const limiter = ctx.createDynamicsCompressor();

@@ -17,7 +17,7 @@
     <header class="topbar">
       <div class="brand">
         <h1>Infinite&nbsp;Ambient <span id="version" class="version"></span></h1>
-        <p class="tagline">A key unlocks the ensemble. The instruments listen to each other.</p>
+        <p class="tagline">One key seeds every instrument — and they listen to each other.</p>
       </div>
 
       <div class="transport">
@@ -28,6 +28,10 @@
       </div>
 
       <div class="key-block">
+        <div class="key-head">
+          <span class="key-title">Key</span>
+          <span class="key-hint">one word seeds the whole soundscape — the same key always sounds the same</span>
+        </div>
         <div class="key-row">
           <input
             id="keyInput"
@@ -35,18 +39,21 @@
             type="text"
             spellcheck="false"
             autocomplete="off"
-            aria-label="Key — seeds the whole ensemble"
+            placeholder="type a word, then Enter…"
+            aria-label="Key — a word that seeds the whole soundscape"
           />
-          <button id="keyApply" class="key-btn" title="Unlock this key">unlock</button>
-          <button id="keyNew" class="key-btn" title="Generate a new key">🎲</button>
-          <button id="keyCopy" class="key-btn" title="Copy the key to share">copy</button>
+          <button id="keyNew" class="key-btn" title="Roll a random key">🎲 Random</button>
+          <button id="keyCopy" class="key-btn" title="Copy this key so you can share it">Copy</button>
         </div>
-        <div id="keyChips" class="chips"></div>
+        <div class="key-starters">
+          <span class="starters-label">Starters</span>
+          <div id="keyChips" class="chips"></div>
+        </div>
       </div>
 
       <div class="globals">
         <label class="mini">Pace <input id="pace" type="range" min="0" max="1" step="0.01" /></label>
-        <label class="mini">Volume <input id="volume" type="range" min="0" max="1" step="0.01" value="0.85" /></label>
+        <label class="mini">Volume <input id="volume" type="range" min="0" max="1" step="0.01" value="0.5" /></label>
         <div class="add-wrap">
           <button id="addBtn" class="ghost">＋ Instrument</button>
           <div id="addMenu" class="add-menu"></div>
