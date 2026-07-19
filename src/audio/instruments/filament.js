@@ -23,6 +23,7 @@ const SALT = 0xf11a;
 
 export const meta = {
   id: "filament",
+  code: "fi",
   name: "Filament",
   role: "lead",
   hue: 38, // amber/gold — deliberate contrast to the drone's violet

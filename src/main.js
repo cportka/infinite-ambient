@@ -1,10 +1,11 @@
 // main.js — boot the rack: shared audio system, conductor, pane manager (with the
-// background compositor), global controls, and the two default instruments.
+// background compositor), global controls, and the opening configuration.
 
 import { createAudioSystem } from "./audio/context.js";
 import { Conductor } from "./audio/conductor.js";
 import { PaneManager } from "./ui/pane-manager.js";
 import { setupGlobalControls } from "./ui/global-controls.js";
+import { parseKey } from "./audio/session.js";
 import { VERSION } from "./version.js";
 
 // Stamp the version next to the title.
@@ -23,15 +24,40 @@ const paneManager = new PaneManager({
 
 const controls = setupGlobalControls({ audio, conductor, paneManager });
 
-// Open with the full ensemble shown, but only the Infinite Drone sounding — the
-// rest start muted so the first impression is calm; unmute any pane to bring it in.
-paneManager.addInstrument("infinite-drone");
-paneManager.addInstrument("surpeti", { muted: true });
-paneManager.addInstrument("filament", { muted: true });
-paneManager.addInstrument("water", { muted: true });
-paneManager.addInstrument("fire", { muted: true });
-paneManager.addInstrument("electricity", { muted: true });
-paneManager.addInstrument("explosions", { muted: true });
+// A shared link can carry the whole configuration in the URL (#k=<key>).
+function incomingKey() {
+  try {
+    const k = new URLSearchParams(location.hash.replace(/^#/, "")).get("k");
+    return k || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// Six random other instruments' ids (excluding the drone), for the default rack.
+function randomOthers(n) {
+  const ids = paneManager.availableInstruments().map((i) => i.id).filter((id) => id !== "infinite-drone");
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+  return ids.slice(0, n);
+}
+
+const raw = incomingKey();
+const incoming = raw ? parseKey(raw) : null;
+
+if (incoming && incoming.config && incoming.config.instruments.length) {
+  // Restore a shared soundscape exactly as it was captured.
+  controls.loadKey(raw);
+} else {
+  // Fresh start: show 6 instruments — always the Infinite Drone (the only one
+  // sounding) plus 5 random others, muted, so the first impression is calm and
+  // a little different every visit. Add or remove any from the instrument menu.
+  if (incoming && incoming.seed) conductor.setKey(incoming.seed);
+  paneManager.addInstrument("infinite-drone", { silent: true });
+  for (const id of randomOthers(5)) paneManager.addInstrument(id, { muted: true, silent: true });
+}
 
 // Visuals animate continuously (they idle gently when paused).
 paneManager.startLoop();
@@ -40,5 +66,8 @@ paneManager.startLoop();
 // stays suspended and the resume-on-first-gesture safety kicks it in.
 controls.setPlaying(true);
 
+// Build the live key from the opening state.
+controls.refreshKey();
+
 // Expose for console tinkering / debugging.
-window.__ambient = { audio, conductor, paneManager };
+window.__ambient = { audio, conductor, paneManager, controls };

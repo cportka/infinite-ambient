@@ -20,6 +20,7 @@ const SALT = 0xe1ec;
 
 export const meta = {
   id: "electricity",
+  code: "el",
   name: "Electricity",
   role: "texture",
   hue: 190, // electric cyan

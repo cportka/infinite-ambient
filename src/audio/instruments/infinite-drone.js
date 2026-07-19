@@ -12,6 +12,7 @@ const SALT = 0xd51e; // keeps this instrument's per-step RNG distinct from other
 
 export const meta = {
   id: "infinite-drone",
+  code: "dr", // stable short code for the shareable config key (never reused)
   name: "Infinite Drone",
   role: "bed",
   hue: 265,

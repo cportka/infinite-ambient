@@ -11,6 +11,7 @@ const SALT_FLARE = 0xf1a5e;
 
 export const meta = {
   id: "fire",
+  code: "fr",
   name: "Fire",
   role: "element",
   hue: 15, // red-orange
