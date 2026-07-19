@@ -11,6 +11,7 @@ const SALT_DRIP = 0x9c3f;
 
 export const meta = {
   id: "water",
+  code: "wa",
   name: "Water",
   role: "element",
   hue: 205, // blue

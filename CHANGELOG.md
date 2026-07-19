@@ -4,6 +4,35 @@ All notable changes to this project are documented here. The format follows Keep
 (https://keepachangelog.com) and the project uses Semantic Versioning (https://semver.org).
 Every change bumps the version and adds an entry below.
 
+## [0.6.0] - 2026-07-19
+
+### Added
+- **Wind** — a new element: howling gusts from swept resonant-bandpass noise over
+  an airy hiss, breathing on a slow gust LFO, with sparse swelling gusts and faint
+  pitched whistles through the gaps. Blown-streak visual (seafoam).
+- **Music Box** — a new lead: delicate struck bell/celeste plinks (inharmonic sine
+  partials with a long shimmering ring and a tiny mechanical tick), answering the
+  harmonic centre a register up and laying back when the mix is busy. Rising-twinkle
+  visual (lavender).
+- **Rain** — a new texture: a bright broadband hiss/wash, a myriad of tiny pattering
+  drop ticks, and occasional pitched drips from the gamut. Falling-streak + splash
+  visual (slate).
+- **The key now captures the whole configuration.** A key is `seed~config`: the seed
+  still seeds the generative piece, and the config encodes master volume, pace, and
+  every open instrument (its type, mute, level, and all params). The key field updates
+  **live** on any change to the rack, syncs to a shareable `#k=…` URL, and pasting a
+  key (or opening a link) restores the exact soundscape. Typing a bare word re-seeds
+  the sound but keeps the current rack. The encoding is versioned and references
+  instruments by a permanent 2-char code, so it stays backwards-compatible as new
+  instruments and params are added (`src/audio/session.js`, capped at 12 instruments).
+- **Per-instrument dice.** Every pane has a 🎲 that re-rolls just that instrument's
+  params, with a roll animation; the global 🎲 (Random) gets the same animation.
+
+### Changed
+- **On load, six instruments open** — always the Infinite Drone (the only one
+  sounding) plus five random others (muted), so the opening is calm but a little
+  different each visit. Add or close any from the instrument menu (max 12).
+
 ## [0.5.0] - 2026-07-08
 
 ### Added

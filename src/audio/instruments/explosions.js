@@ -15,6 +15,7 @@ const SALT = 0xb0053;
 
 export const meta = {
   id: "explosions",
+  code: "ex",
   name: "Explosions",
   role: "rhythm",
   hue: 20, // warm orange/red

@@ -1,6 +1,6 @@
 # infinite-ambient
 
-> **Version:** 0.5.0
+> **Version:** 0.6.0
 
 An infinite generative ambient **rack** — a set of instruments that play together and listen to
 each other — generated live in your browser.
@@ -38,22 +38,35 @@ feed the broader field and the field frames the panes.
   tuned to the root, harmonium buzz, beating, and a slow bellows breath. Visual: a breathing mandala.
 - **Filament** *(lead, amber)* — Karplus-Strong plucked microtonal strings that answer the drone,
   echo (a **Melt** feedback delay), and melt into the bed. Visual: ripples in a puddle.
+- **Music Box** *(lead, lavender)* — delicate struck-bell/celeste plinks: inharmonic sine partials
+  with a long shimmering ring, answering the harmonic centre a register up. Visual: rising twinkles.
 - **Water** *(element, blue)* — a flowing brook (filtered-noise bed), rising "bloop" bubbles, and
   pitched drips drawn from the gamut (they ring in tune and invite answers). Visual: flowing ripples
   + droplet rings.
 - **Fire** *(element, red-orange)* — a breathing roar, constant warm crackle, and flames flaring up.
   Visual: bottom-rooted flame tongues + rising embers.
+- **Wind** *(element, seafoam)* — howling gusts: swept resonant-bandpass noise over an airy hiss,
+  breathing on a slow gust LFO, with faint pitched whistles through the gaps. Visual: blown streaks.
 - **Electricity** *(texture, cyan)* — mains **hum**, ring-modulated **interference**, a **storm** of
   lightning + thunder, and **sawtooth jitter** magnetism. Visual: lightning bolts over a plasma field.
+- **Rain** *(texture, slate)* — steady rainfall: a bright broadband hiss/wash, a myriad of tiny
+  pattering drop ticks, and occasional pitched drips from the gamut. Visual: falling streaks + splashes.
 - **Explosions** *(rhythm, amber-red)* — big saturated **blasts** (crack + swept rumble + deep sub +
   debris) and **shrapnel** trills (bursts of tiny crackle grains). Scale morphs slow ambient blasts ↔
   a fast shrapnel-crackle drum machine. Visual: shockwaves + scatter.
 
 ## The key
 
-The **key** is just a string — `aurora`, `tidewater`, a random `vel-drin-42`, or anything you type.
-It deterministically seeds the ensemble, so the same key always plays the same music from the same
-start, a new key is a whole new ensemble, and copying your key hands someone exactly what you heard.
+The **key** is a snapshot of your whole soundscape. At its simplest it's just a word — `aurora`,
+`tidewater`, a random `vel-drin-42`, or anything you type — which deterministically seeds the
+ensemble, so the same word always plays the same music from the same start.
+
+But the key also **captures the entire configuration** — master volume, pace, and every open
+instrument with its mute, level, and all its params — as a compact `seed~config` string that updates
+**live** as you tweak the rack. Copy it (or the `#k=…` link) to save or share your exact setup;
+paste one back to restore it note-for-note. Type a bare word and it just re-seeds the sound while
+keeping your current rack. The encoding is versioned and references instruments by a permanent code,
+so it stays **backwards-compatible** as new instruments and params are added (up to 12 instruments).
 
 ## Not Western scales
 
@@ -74,6 +87,11 @@ intervals matter more than notes:
   gap-filling, shared harmonic motion).
 - **Truly generative & deterministic** — every note is scheduled live from the shared key; nothing is
   pre-recorded, it never repeats, yet the harmonic frame is perfectly reproducible.
+- **The key is your whole setup** — a live `seed~config` string (also a `#k=…` link) that captures
+  volume, pace, and every instrument's mute/level/params; copy to save or share, paste to restore.
+  Versioned and forwards-compatible (max 12 instruments).
+- **Roll the dice** — each instrument has a 🎲 to re-roll just its own params (with a roll animation);
+  the global 🎲 rolls a fresh seed. A fresh visit opens the drone plus a random handful of instruments.
 - **Named keys** — Aurora, Deep Field, Tidewater, Glass Rain, Monolith, Petrichor — plus type-your-own
   and a randomiser.
 - **Zero dependencies, zero build** — plain ES modules + Web Audio. Static files, hostable
@@ -105,15 +123,19 @@ src/
     piece.js                  seed → deterministic microtonal piece (unit-tested)
     reverb.js                 synthesised convolution impulse
     presets.js                curated named keys
+    session.js                the key ⇄ whole-config encode/decode (versioned)
     noise.js                  shared seeded noise-buffer helper
     instruments/
       index.js                the instrument registry (drives the UI)
       infinite-drone.js       drone / bed — the aurora
       surpeti.js              shruti-box reed drone / bed
-      filament.js             Karplus-Strong plucked strings — the lead
+      filament.js             Karplus-Strong plucked strings — lead
+      musicbox.js             struck bell/celeste plinks — lead
       water.js                brook / bubbles / drips — element
       fire.js                 roar / crackle / flares — element
+      wind.js                 howling swept-noise gusts — element
       electricity.js          hum / interference / storm / jitter — texture
+      rain.js                 hiss / patter / drips — texture
       explosions.js           blasts + shrapnel — rhythm
   version.js                  app version shown in the header
   ui/

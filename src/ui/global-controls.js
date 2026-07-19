@@ -1,8 +1,12 @@
-// global-controls.js — the top bar. The Key is shared by the whole ensemble
-// (it seeds the conductor's tonal field); transport, pace, and volume are global.
-// The add-instrument menu is generated from the registry.
+// global-controls.js — the top bar. The Key now captures the WHOLE configuration:
+// it reads `seed~<config>` where the seed still seeds the generative piece and the
+// config encodes master volume, pace, and every open instrument (mute/mix/params).
+// The field updates live on any change to the rack, so copying it saves/shares the
+// exact soundscape and pasting one restores it. Typing a bare word re-seeds the
+// music but keeps the current rack. The add-instrument menu is registry-driven.
 
 import { NAMED_KEYS, DEFAULT_KEY } from "../audio/presets.js";
+import { buildKey, parseKey } from "../audio/session.js";
 
 export function setupGlobalControls({ audio, conductor, paneManager }) {
   const $ = (id) => document.getElementById(id);
@@ -18,42 +22,91 @@ export function setupGlobalControls({ audio, conductor, paneManager }) {
   window.addEventListener("pointerdown", kick, true);
   window.addEventListener("keydown", kick, true);
 
-  // --- key ----------------------------------------------------------------
   const keyInput = $("keyInput");
   const chipsWrap = $("keyChips");
+  const volume = $("volume");
+  const pace = $("pace");
+
+  // roll animation shared by every dice button
+  const roll = (btn) => {
+    btn.classList.remove("rolling");
+    void btn.offsetWidth;
+    btn.classList.add("rolling");
+    btn.addEventListener("animationend", () => btn.classList.remove("rolling"), { once: true });
+  };
+
+  // --- the live key -------------------------------------------------------
+  function currentState() {
+    return {
+      volume: Number(volume.value),
+      pace: Number(pace.value),
+      instruments: paneManager.snapshot(),
+    };
+  }
+  let editing = false; // don't clobber the field while the user is typing in it
+  function refreshKey() {
+    const full = buildKey(conductor.key, currentState());
+    if (!editing) keyInput.value = full;
+    markChip(conductor.key);
+    try { history.replaceState(null, "", "#k=" + encodeURIComponent(full)); } catch (_) {}
+  }
+  let pending = false;
+  function refreshKeySoon() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => { pending = false; refreshKey(); });
+  }
+
+  // Apply a key. Full key (has `~config`) → restore the whole rack; bare word →
+  // re-seed the music but keep the current rack.
+  function loadKey(text) {
+    const { seed, config } = parseKey(text);
+    if (!seed && !config) return;
+    if (seed) conductor.setKey(seed);
+    // Only restore a rack from a config that actually decoded to instruments, so a
+    // garbled paste (valid prefix, no readable instruments) can't wipe the rack.
+    if (config && config.instruments.length) {
+      volume.value = config.volume;
+      audio.setMasterVolume(config.volume);
+      pace.value = config.pace;
+      conductor.setPace(config.pace);
+      paneManager.applySession(config.instruments);
+    }
+    refreshKey();
+  }
+
+  // --- key field + starters ----------------------------------------------
   const chips = {};
   for (const { label, key } of NAMED_KEYS) {
     const b = document.createElement("button");
     b.className = "chip";
     b.textContent = label;
-    b.addEventListener("click", () => loadKey(key));
+    b.addEventListener("click", () => loadKey(key)); // a starter is a bare seed
     chipsWrap.appendChild(b);
     chips[key] = b;
   }
   function markChip(key) {
     for (const [k, b] of Object.entries(chips)) b.classList.toggle("active", k === key);
   }
-  function loadKey(key) {
-    const k = String(key).trim();
-    if (!k) return;
-    conductor.setKey(k);
-    keyInput.value = conductor.key;
-    markChip(conductor.key);
-  }
-  // Apply a typed key on Enter or when the field loses focus — no cryptic button.
+
+  keyInput.addEventListener("focus", () => { editing = true; });
+  keyInput.addEventListener("blur", () => {
+    editing = false;
+    if (keyInput.value.trim()) loadKey(keyInput.value);
+    else refreshKey();
+  });
   keyInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { loadKey(keyInput.value); keyInput.blur(); }
   });
-  keyInput.addEventListener("blur", () => {
-    if (keyInput.value.trim() && keyInput.value.trim() !== conductor.key) loadKey(keyInput.value);
-  });
+
   $("keyNew").addEventListener("click", () => {
+    roll($("keyNew"));
     import("../audio/piece.js").then(({ randomKey }) => loadKey(randomKey()));
   });
   $("keyCopy").addEventListener("click", async () => {
     const btn = $("keyCopy");
     try {
-      await navigator.clipboard.writeText(conductor.key);
+      await navigator.clipboard.writeText(keyInput.value);
       btn.textContent = "Copied ✓";
       setTimeout(() => (btn.textContent = "Copy"), 1200);
     } catch (_) {
@@ -64,8 +117,7 @@ export function setupGlobalControls({ audio, conductor, paneManager }) {
   // --- transport ----------------------------------------------------------
   const playBtn = $("playAll");
   let playing = false;
-  let busy = false; // re-entrancy guard: audio.resume() genuinely awaits on the
-  // first gesture, so a toggle landing mid-await must not race the state/UI.
+  let busy = false; // re-entrancy guard (audio.resume() genuinely awaits first gesture)
   function paintTransport() {
     playBtn.classList.toggle("playing", playing);
     playBtn.setAttribute("aria-pressed", String(playing));
@@ -84,7 +136,7 @@ export function setupGlobalControls({ audio, conductor, paneManager }) {
         conductor.stop();
         paneManager.stopAll();
       }
-      playing = next; // commit only after the work; paint from it, never re-read mid-flight
+      playing = next;
       paintTransport();
     } finally {
       busy = false;
@@ -100,11 +152,9 @@ export function setupGlobalControls({ audio, conductor, paneManager }) {
   });
 
   // --- pace + volume ------------------------------------------------------
-  const pace = $("pace");
   pace.value = conductor.pace;
-  pace.addEventListener("input", () => conductor.setPace(Number(pace.value)));
-  const volume = $("volume");
-  volume.addEventListener("input", () => audio.setMasterVolume(Number(volume.value)));
+  pace.addEventListener("input", () => { conductor.setPace(Number(pace.value)); refreshKeySoon(); });
+  volume.addEventListener("input", () => { audio.setMasterVolume(Number(volume.value)); refreshKeySoon(); });
 
   // --- add instrument -----------------------------------------------------
   const addBtn = $("addBtn");
@@ -120,15 +170,22 @@ export function setupGlobalControls({ audio, conductor, paneManager }) {
     });
     menu.appendChild(item);
   }
+  function reflectCap() {
+    addBtn.disabled = paneManager.full;
+    addBtn.title = paneManager.full ? "Maximum 12 instruments" : "Add an instrument";
+  }
   addBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+    if (paneManager.full) return;
     menu.classList.toggle("open");
   });
   document.addEventListener("click", () => menu.classList.remove("open"));
 
-  // initial key state (conductor already built with DEFAULT_KEY)
-  keyInput.value = conductor.key || DEFAULT_KEY;
-  markChip(conductor.key);
+  // Keep the key (and the add-cap) live as the rack changes.
+  paneManager.onConfigChange(() => { refreshKeySoon(); reflectCap(); });
 
-  return { setPlaying };
+  keyInput.value = conductor.key || DEFAULT_KEY;
+  reflectCap();
+
+  return { setPlaying, refreshKey, loadKey };
 }

@@ -15,6 +15,7 @@ const SALT = 0x5f2ee7;
 
 export const meta = {
   id: "surpeti",
+  code: "su",
   name: "Surpeti",
   role: "bed",
   hue: 330, // rose
