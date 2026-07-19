@@ -47,13 +47,16 @@ export class Pane {
     }
 
     const muteBtn = body.querySelector(".mute");
+    const reflectMute = () => {
+      muteBtn.setAttribute("aria-pressed", String(instrument.muted));
+      muteBtn.classList.toggle("active", instrument.muted);
+      muteBtn.textContent = instrument.muted ? "muted" : "mute";
+    };
     muteBtn.addEventListener("click", () => {
-      const muted = !instrument.muted;
-      instrument.setMuted(muted);
-      muteBtn.setAttribute("aria-pressed", String(muted));
-      muteBtn.classList.toggle("active", muted);
-      muteBtn.textContent = muted ? "muted" : "mute";
+      instrument.setMuted(!instrument.muted);
+      reflectMute();
     });
+    reflectMute(); // reflect any initial muted state (e.g. muted-on-load)
     body.querySelector(".close").addEventListener("click", () => this.onClose(this));
 
     this.visual = createVisual(canvas, instrument, conductor);

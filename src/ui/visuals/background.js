@@ -12,7 +12,7 @@ export function createBackground(canvas, audio, conductor, hueOf) {
   const ripples = [];
   let w = 0, h = 0, phase = 0, energy = 0;
 
-  const roleY = { bed: 0.8, texture: 0.6, lead: 0.32, rhythm: 0.5 };
+  const roleY = { bed: 0.8, texture: 0.6, lead: 0.32, rhythm: 0.5, element: 0.55 };
 
   const unsub = conductor.on("note", (n) => {
     const hue = n.hue ?? hueOf(n.instrument);

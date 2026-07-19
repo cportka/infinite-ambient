@@ -21,17 +21,24 @@ const paneManager = new PaneManager({
   conductor,
 });
 
-setupGlobalControls({ audio, conductor, paneManager });
+const controls = setupGlobalControls({ audio, conductor, paneManager });
 
-// Open with the full ensemble — all instruments shown from the start.
+// Open with the full ensemble shown, but only the Infinite Drone sounding — the
+// rest start muted so the first impression is calm; unmute any pane to bring it in.
 paneManager.addInstrument("infinite-drone");
-paneManager.addInstrument("filament");
-paneManager.addInstrument("electricity");
-paneManager.addInstrument("explosions");
+paneManager.addInstrument("surpeti", { muted: true });
+paneManager.addInstrument("filament", { muted: true });
+paneManager.addInstrument("water", { muted: true });
+paneManager.addInstrument("fire", { muted: true });
+paneManager.addInstrument("electricity", { muted: true });
+paneManager.addInstrument("explosions", { muted: true });
 
-// Visuals animate continuously (they idle gently when paused); audio waits for
-// the first gesture via the transport.
+// Visuals animate continuously (they idle gently when paused).
 paneManager.startLoop();
+
+// Auto-play on load. If the browser blocks audio until a gesture, the context
+// stays suspended and the resume-on-first-gesture safety kicks it in.
+controls.setPlaying(true);
 
 // Expose for console tinkering / debugging.
 window.__ambient = { audio, conductor, paneManager };

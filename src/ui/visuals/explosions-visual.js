@@ -1,13 +1,10 @@
-// explosions-visual.js — shockwaves. Each explosion throws an expanding ring (and,
-// for the big ones, radial debris) from a point in the pane: booms are large and
-// slow, hats small and quick — so the visual reads the same slow↔fast continuum as
-// the sound. Embers drift upward when it's quiet so it never goes dead. Warm hue.
+// explosions-visual.js — shockwaves for the big blasts (large slow rings + radial
+// debris) and scattered flecks for the shrapnel trills (crinkly crackle bursts).
+// Embers drift upward when it's quiet so it never goes dead. Warm hue.
 
 const SHAPE = {
-  kick: { life: 1.3, rad: 0.5, deb: 6, w: 2.4 },
-  boom: { life: 2.6, rad: 0.7, deb: 10, w: 2.8 },
-  snare: { life: 0.8, rad: 0.36, deb: 4, w: 1.8 },
-  hat: { life: 0.4, rad: 0.2, deb: 0, w: 1.2 },
+  kick: { life: 1.6, rad: 0.55, deb: 8, w: 2.6 },
+  boom: { life: 2.8, rad: 0.72, deb: 12, w: 3.0 },
 };
 
 export function createExplosionsVisual(canvas, instrument, conductor) {
@@ -20,14 +17,25 @@ export function createExplosionsVisual(canvas, instrument, conductor) {
 
   const unsub = conductor.on("note", (n) => {
     if (n.instrument !== instrument.id) return;
-    const s = SHAPE[n.timbre] || SHAPE.boom;
-    const x = w * (0.5 + (Math.random() * 2 - 1) * (n.timbre === "hat" ? 0.42 : 0.24));
-    const y = h * (n.timbre === "hat" ? 0.28 + Math.random() * 0.3 : 0.5 + Math.random() * 0.18);
     const strength = 0.5 + (n.velocity || 0.5) * 0.6;
+    if (n.timbre === "shrapnel") {
+      // A tight scatter of crackle flecks flying off from a point.
+      const sx = w * (0.15 + Math.random() * 0.7);
+      const sy = h * (0.25 + Math.random() * 0.5);
+      for (let i = 0; i < 8; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const sp = 60 + Math.random() * 220;
+        debris.push({ x: sx, y: sy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, age: 0, life: 0.5 + Math.random() * 0.4, small: true });
+      }
+      return;
+    }
+    const s = SHAPE[n.timbre] || SHAPE.boom;
+    const x = w * (0.5 + (Math.random() * 2 - 1) * 0.24);
+    const y = h * (0.5 + Math.random() * 0.18);
     waves.push({ x, y, age: 0, life: s.life, maxR: Math.min(w, h) * s.rad * strength, w: s.w, hueJ: (Math.random() * 2 - 1) * 12 });
     for (let i = 0; i < s.deb; i++) {
       const a = Math.random() * Math.PI * 2;
-      const sp = (40 + Math.random() * 160) * strength;
+      const sp = (40 + Math.random() * 180) * strength;
       debris.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 30, age: 0, life: s.life * 0.9 });
     }
   });
@@ -109,17 +117,17 @@ export function createExplosionsVisual(canvas, instrument, conductor) {
       }
     }
 
-    // Debris.
+    // Debris + shrapnel flecks.
     for (let i = debris.length - 1; i >= 0; i--) {
       const d = debris[i];
       d.age += step;
       if (d.age > d.life) { debris.splice(i, 1); continue; }
-      d.vy += 120 * step; // gravity
+      d.vy += (d.small ? 40 : 120) * step; // shrapnel is lighter, floatier
       d.x += d.vx * step;
       d.y += d.vy * step;
-      const a = (1 - d.age / d.life) * 0.7;
-      ctx.fillStyle = `hsla(${hue + 20}, 100%, 68%, ${a})`;
-      ctx.fillRect(d.x, d.y, 2, 2);
+      const a = (1 - d.age / d.life) * (d.small ? 0.85 : 0.7);
+      ctx.fillStyle = `hsla(${hue + (d.small ? 45 : 20)}, 100%, ${d.small ? 82 : 68}%, ${a})`;
+      ctx.fillRect(d.x, d.y, d.small ? 1.5 : 2, d.small ? 1.5 : 2);
     }
   }
 

@@ -104,8 +104,26 @@ body {
     linear-gradient(#0a0c1c, #0a0c1c) right / 4px 100% no-repeat;
 }
 
-.key-block { flex: 2 1 320px; }
+.key-block { flex: 2 1 340px; }
+.key-head { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
+.key-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.key-hint { font-size: 0.72rem; color: var(--muted); }
 .key-row { display: flex; gap: 0.4rem; }
+.key-starters { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.starters-label {
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+.key-input::placeholder { color: rgba(154, 163, 199, 0.6); }
 .key-input {
   flex: 1 1 auto; min-width: 0;
   padding: 0.55rem 0.75rem;
@@ -129,7 +147,7 @@ body {
 }
 .key-btn:hover { border-color: var(--accent); }
 
-.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; flex: 1 1 auto; }
 .chip {
   padding: 0.32rem 0.7rem;
   border-radius: 999px;
